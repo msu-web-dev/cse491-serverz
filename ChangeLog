@@ -1,3 +1,8 @@
+2014-01-09 Maxwell Brown 
+
+* Added HTTP 1.0 response, Hello World to server.py
+* Added print c.recv(1000) to server.py
+
 2014-01-07  Titus Brown  <t@Titus-MacBook-Air-2.local>
 
  * Initialized repository, created server.py and README.
