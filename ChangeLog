@@ -1,3 +1,7 @@
 2014-01-07  Titus Brown  <t@Titus-MacBook-Air-2.local>
 
  * Initialized repository, created server.py and README.
+
+2014-01-08 Brian Jurgess
+ * Modified the server response to return the required string from step 2
+ * Added print c.recv(1000) to output the request header
