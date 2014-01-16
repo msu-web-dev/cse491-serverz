@@ -23,4 +23,6 @@ while True:
 Content-Type:text/html
 
 <h1>Hello World</h1> this is MaxwellGBrown's Web server.''')
+# @You could move this string into a veriable during initialization
+#  and just send the text string
     c.close()
