@@ -16,7 +16,6 @@ s.listen(5)
 print 'Entering infinite loop; hit CTRL-C to exit'
 while True:
     c, (client_host, client_port) = s.accept()
-    print c.recv(1000)
     print 'Got connection from', client_host, client_port
 
     c.send("HTTP/1.0 200 OK\r\n")
