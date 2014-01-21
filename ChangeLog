@@ -1,13 +1,11 @@
 2014-01-21  Andrew Sundheimer
 
- * Initialized the HW2 branch with the HW1 solution.
+ * Homework 2 - Updating server.py to reflect the hw1 solution.
 
-2014-01-15  Andrew Sundheimer
+2014-01-14  Andrew Sundheimer
 
- * Updated server.py to implement Hello World. Also removed obvious comments.
+ * Homework 1 - HelloWorld - Updated server.py to implement Hello World. Also removed unnecessary comments.
 
 2014-01-07  Titus Brown  <t@Titus-MacBook-Air-2.local>
 
  * Initialized repository, created server.py and README.
-
-
