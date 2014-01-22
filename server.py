@@ -6,7 +6,7 @@ import time
 def handle_connection(conn):
     # Get the request and split it to get the
     # request type and the requested folder
-    request = conn.recv(1000).splitlines()
+    request = conn.recv(1000).split('\n')
     request_type = request[0].split(' ')
 
     send200(conn)
