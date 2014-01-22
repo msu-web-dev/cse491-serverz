@@ -1,10 +1,17 @@
+2014-01-22  Andrew Sundheimer
+
+ * Homework 2 - Updating server.py and test_server.py with my initial implementation of hw2.
+
+
 2014-01-21  Andrew Sundheimer
 
  * Homework 2 - Updating server.py to reflect the hw1 solution.
 
+
 2014-01-14  Andrew Sundheimer
 
  * Homework 1 - HelloWorld - Updated server.py to implement Hello World. Also removed unnecessary comments.
+
 
 2014-01-07  Titus Brown  <t@Titus-MacBook-Air-2.local>
 
