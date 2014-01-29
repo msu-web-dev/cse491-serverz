@@ -6,7 +6,13 @@
  * Modified the server response to return the required string from step 2
  * Added print c.recv(1000) to output the request header
 
-2014-01-21 Brian Jurges
+2014-01-21 Brian Jurgess
  * Added test_server.py
  * Modified handle_connection adding ability to handle POST, GET and
 	different paths
+
+2014-01-28 Brian Jurgess
+ * Added the ability to parse GET and POST forms
+ * Refactored handle_connection function, moving all the views into their
+	own respective functions
+ * Added error pages for incorrect request type, and incorrect url
