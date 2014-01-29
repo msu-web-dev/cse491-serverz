@@ -40,6 +40,8 @@ def test_handle_connection():
                       '<a href="/content">Content</a><br />' + \
                       '<a href="/image">Image</a><br />' + \
                       '<a href="/file">File</a><br />' + \
+                      '<a href="/form">Form Get</a><br />' + \
+                      '<a href="/formpost">Form Post</a><br />' + \
                       '</div>' + \
                       '</body></html>'
 
@@ -91,7 +93,36 @@ def test_post():
                       'Content-type: text/html\r\n' + \
                       '\r\n' + \
                       '<html><body>' + \
-                      '<h1>You have posted content.</h1>' + \
+                      '<h1>404 NOT FOUND</h1>' + \
+                      '<p>Could not find /. Please try again.</p>' + \
+                      '</body></html>'
+
+    server.handle_connection(conn)
+
+    assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)
+
+def test_form_get():
+    conn = FakeConnection("GET /submit?firstname=Brian&lastname=Jurgess HTTP/1.0\r\n\r\n")
+
+    expected_return = 'HTTP/1.0 200 OK\r\n' + \
+                      'Content-type: text/html\r\n' + \
+                      '\r\n' + \
+                      '<html><body>' + \
+                      'Hello Brian Jurgess.' + \
+                      '</body></html>'
+    
+    server.handle_connection(conn)
+
+    assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)
+
+def test_form_post():
+    conn = FakeConnection("POST /submitpost HTTP/1.0\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 32\r\n\r\nfirstname=Brian&lastname=Jurgess")
+
+    expected_return = 'HTTP/1.0 200 OK\r\n' + \
+                      'Content-type: text/html\r\n' + \
+                      '\r\n' + \
+                      '<html><body>' + \
+                      'Hello Brian Jurgess.' + \
                       '</body></html>'
 
     server.handle_connection(conn)
