@@ -1,6 +1,5 @@
 import sys
 import server
-import requests
 
 class FakeConnection(object):
     """
@@ -123,6 +122,70 @@ def test_form_post():
                       '\r\n' + \
                       '<html><body>' + \
                       'Hello Brian Jurgess.' + \
+                      '</body></html>'
+
+    server.handle_connection(conn)
+
+    assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)
+
+def test_form_page_get():
+    conn = FakeConnection("GET /form HTTP/1.0\r\n\r\n")
+
+    expected_return = 'HTTP/1.0 200 OK\r\n' + \
+                      'Content-type: text/html\r\n' + \
+                      '\r\n' + \
+                      '<html><body>' + \
+                      '<form action="/submit" method="GET">' + \
+                      '<input type="text" name="firstname"/>' + \
+                      '<input type="text" name="lastname"/>' + \
+                      '<input type="submit" value="Submit" />' + \
+                      '</form></body></html>'
+
+    server.handle_connection(conn)
+
+    assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)
+
+def test_form_page_post():
+    conn = FakeConnection("GET /formpost HTTP/1.0\r\n\r\n")
+
+    expected_return = 'HTTP/1.0 200 OK\r\n' + \
+                      'Content-type: text/html\r\n' + \
+                      '\r\n' + \
+                      '<html><body>' + \
+                      '<form action="/submitpost" method="POST">' + \
+                      '<input type="text" name="firstname"/>' + \
+                      '<input type="text" name="lastname"/>' + \
+                      '<input type="submit" value="Submit"/>' + \
+                      '</form></body></html>'
+
+    server.handle_connection(conn)
+
+    assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)
+
+def test_500_error():
+    conn = FakeConnection("PATCH / HTTP/1.1\r\n\r\n")
+
+    expected_return = 'HTTP/1.0 200 OK\r\n' + \
+                      'Content-type: text/html\r\n' + \
+                      '\r\n' + \
+                      '<html><body>' + \
+                      '<h1>ERROR 500 NOT IMPLEMENTED</h1>' + \
+                      '<p>This type of request has not been implemented.</p>' + \
+                      '</body></html>'
+
+    server.handle_connection(conn)
+
+    assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)
+
+def test_404_error():
+    conn = FakeConnection("GET /blah HTTP/1.0\r\n\r\n")
+
+    expected_return = 'HTTP/1.0 200 OK\r\n' + \
+                      'Content-type: text/html\r\n' + \
+                      '\r\n' + \
+                      '<html><body>' + \
+                      '<h1>404 NOT FOUND</h1>' + \
+                      '<p>Could not find /blah. Please try again.</p>' + \
                       '</body></html>'
 
     server.handle_connection(conn)
