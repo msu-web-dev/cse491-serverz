@@ -34,7 +34,8 @@ def testHandleConnectionHomepage():
                       'Content-type: text/html\r\n' + \
                       '\r\n' + \
                       '<h1>Home</h1>' + \
-                      '<p><a href=\"http://test:0/content\">Content</a> | ' + \
+                      '<p><a href=\"http://test:0/\">Home</a> | ' + \
+                      '<a href=\"http://test:0/content\">Content</a> | ' + \
                       '<a href=\"http://test:0/file\">File</a> | ' + \
                       '<a href=\"http://test:0/image\">Image</a></p>' + \
                       '<p><form action=\'/submit\' method=\'GET\'>' + \
@@ -61,8 +62,11 @@ def testHandleConnectionContent():
     expected_return = 'HTTP/1.0 200 OK\r\n' + \
                       'Content-type: text/html\r\n' + \
                       '\r\n' + \
-                      '<h1>Content Page</h1>' + \
-                      '<p><a href=\"http://test:0/\">Home</a></p>'
+                      '<h1>Content</h1>' + \
+                      '<p><a href=\"http://test:0/\">Home</a> | ' + \
+                      '<a href=\"http://test:0/content\">Content</a> | ' + \
+                      '<a href=\"http://test:0/file\">File</a> | ' + \
+                      '<a href=\"http://test:0/image\">Image</a></p>'
 
     server.handleConnection(conn,"test",0)
 
@@ -73,8 +77,11 @@ def testHandleConnectionFile():
     expected_return = 'HTTP/1.0 200 OK\r\n' + \
                       'Content-type: text/html\r\n' + \
                       '\r\n' + \
-                      '<h1>File Page</h1>' + \
-                      '<p><a href=\"http://test:0/\">Home</a></p>'
+                      '<h1>File</h1>' + \
+                      '<p><a href=\"http://test:0/\">Home</a> | ' + \
+                      '<a href=\"http://test:0/content\">Content</a> | ' + \
+                      '<a href=\"http://test:0/file\">File</a> | ' + \
+                      '<a href=\"http://test:0/image\">Image</a></p>'
 
     server.handleConnection(conn,"test",0)
 
@@ -85,8 +92,11 @@ def testHandleConnectionImage():
     expected_return = 'HTTP/1.0 200 OK\r\n' + \
                       'Content-type: text/html\r\n' + \
                       '\r\n' + \
-                      '<h1>Image Page</h1>' + \
-                      '<p><a href=\"http://test:0/\">Home</a></p>'
+                      '<h1>Image</h1>' + \
+                      '<p><a href=\"http://test:0/\">Home</a> | ' + \
+                      '<a href=\"http://test:0/content\">Content</a> | ' + \
+                      '<a href=\"http://test:0/file\">File</a> | ' + \
+                      '<a href=\"http://test:0/image\">Image</a></p>'
 
     server.handleConnection(conn,"test",0)
 
@@ -94,11 +104,15 @@ def testHandleConnectionImage():
 
 def testHandleConnectionFormSubmition():
     conn = FakeConnection("GET /submit?firstname=Doctor&lastname=Mario HTTP/1.0\r\n\r\n")
-    expected_return = "HTTP/1.0 200 OK\r\n"
-    expected_return += "Content-type: text/html\r\n"
-    expected_return += "\r\n"
-    expected_return += "<h1>Hello Doctor Mario.</h1>"
-    expected_return += "<p><a href=\"http://test:0/\">Home</a></p>"
+    expected_return = "HTTP/1.0 200 OK\r\n" + \
+                      "Content-type: text/html\r\n" + \
+                      "\r\n" + \
+                      '<h1>Form Submition</h1>' + \
+                      '<p><a href=\"http://test:0/\">Home</a> | ' + \
+                      '<a href=\"http://test:0/content\">Content</a> | ' + \
+                      '<a href=\"http://test:0/file\">File</a> | ' + \
+                      '<a href=\"http://test:0/image\">Image</a></p>' + \
+                      "<h2>Hello Doctor Mario.</h2>"
     
     server.handleConnection(conn,"test",0)
 
@@ -106,11 +120,15 @@ def testHandleConnectionFormSubmition():
     
 def testHandleConnectionPostFormSubmition():
     conn = FakeConnection("POST /submit HTTP/1.0\r\n\r\nfirstname=Doctor&lastname=Mario")
-    expected_return = "HTTP/1.0 200 OK\r\n"
-    expected_return += "Content-type: text/html\r\n"
-    expected_return += "\r\n"
-    expected_return += "<h1>Hello Doctor Mario.</h1>"
-    expected_return += "<p><a href=\"http://test:0/\">Home</a></p>"
+    expected_return = "HTTP/1.0 200 OK\r\n" + \
+                      "Content-type: text/html\r\n" + \
+                      "\r\n" + \
+                      '<h1>Post Form Submition</h1>' + \
+                      '<p><a href=\"http://test:0/\">Home</a> | ' + \
+                      '<a href=\"http://test:0/content\">Content</a> | ' + \
+                      '<a href=\"http://test:0/file\">File</a> | ' + \
+                      '<a href=\"http://test:0/image\">Image</a></p>' + \
+                      "<h2>Hello Doctor Mario.</h2>"
     
     server.handleConnection(conn,"test",0)
 
@@ -118,7 +136,15 @@ def testHandleConnectionPostFormSubmition():
     
 def testHandleConnectionPost():
     conn = FakeConnection("POST / HTTP/1.0\r\n\r\n")
-    expected_return = 'Hello Post World.'
+    expected_return = "HTTP/1.0 200 OK\r\n" + \
+                      "Content-type: text/html\r\n" + \
+                      '\r\n' + \
+                      '<h1>Post</h1>' + \
+                      '<p><a href=\"http://test:0/\">Home</a> | ' + \
+                      '<a href=\"http://test:0/content\">Content</a> | ' + \
+                      '<a href=\"http://test:0/file\">File</a> | ' + \
+                      '<a href=\"http://test:0/image\">Image</a></p>' + \
+                      'Hello Post World.'
 
     server.handleConnection(conn,"test",0)
 
