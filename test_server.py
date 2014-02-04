@@ -34,9 +34,23 @@ def testHandleConnectionHomepage():
                       'Content-type: text/html\r\n' + \
                       '\r\n' + \
                       '<h1>Home</h1>' + \
-                      '<p><a href=\"http://test:0/content\">Content</a></p>' + \
-                      '<p><a href=\"http://test:0/file\">File</a></p>' + \
-                      '<p><a href=\"http://test:0/image\">Image</a></p>'
+                      '<p><a href=\"http://test:0/content\">Content</a> | ' + \
+                      '<a href=\"http://test:0/file\">File</a> | ' + \
+                      '<a href=\"http://test:0/image\">Image</a></p>' + \
+                      '<p><form action=\'/submit\' method=\'GET\'>' + \
+                      'Firstname: <input type=\'text\' name=\'firstname\'>' + \
+                      '<br />' + \
+                      'Lastname: <input type=\'text\' name=\'lastname\'>' + \
+                      '<br />' + \
+                      '<input type=\'submit\' value=\'submit\'>' + \
+                      '</form></p>' + \
+                      '<p><form action=\'/submit\' method=\'POST\'>' + \
+                      'Firstname: <input type=\'text\' name=\'firstname\'>' + \
+                      '<br />' + \
+                      'Lastname: <input type=\'text\' name=\'lastname\'>' + \
+                      '<br />' + \
+                      '<input type=\'submit\' value=\'submit\'>' + \
+                      '</form></p>'
 
     server.handleConnection(conn,"test",0)
 
@@ -78,9 +92,33 @@ def testHandleConnectionImage():
 
     assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)
 
+def testHandleConnectionFormSubmition():
+    conn = FakeConnection("GET /submit?firstname=Doctor&lastname=Mario HTTP/1.0\r\n\r\n")
+    expected_return = "HTTP/1.0 200 OK\r\n"
+    expected_return += "Content-type: text/html\r\n"
+    expected_return += "\r\n"
+    expected_return += "<h1>Hello Doctor Mario.</h1>"
+    expected_return += "<p><a href=\"http://test:0/\">Home</a></p>"
+    
+    server.handleConnection(conn,"test",0)
+
+    assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)
+    
+def testHandleConnectionPostFormSubmition():
+    conn = FakeConnection("POST /submit HTTP/1.0\r\n\r\nfirstname=Doctor&lastname=Mario")
+    expected_return = "HTTP/1.0 200 OK\r\n"
+    expected_return += "Content-type: text/html\r\n"
+    expected_return += "\r\n"
+    expected_return += "<h1>Hello Doctor Mario.</h1>"
+    expected_return += "<p><a href=\"http://test:0/\">Home</a></p>"
+    
+    server.handleConnection(conn,"test",0)
+
+    assert conn.sent == expected_return, 'Got: %s' % (repr(conn.sent),)    
+    
 def testHandleConnectionPost():
     conn = FakeConnection("POST / HTTP/1.0\r\n\r\n")
-    expected_return = 'Hello, World.'
+    expected_return = 'Hello Post World.'
 
     server.handleConnection(conn,"test",0)
 
