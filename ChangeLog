@@ -1,3 +1,7 @@
+2014-02-04  Andrew Sundheimer
+ * Cleaning up server.py and associated test cases. Fixed a bug with null values when submitting a form.
+
+
 2014-01-29  Andrew Sundheimer
  * Homework 3 - Updating server.py and test_server.py with my initial implementation of hw3.
 
