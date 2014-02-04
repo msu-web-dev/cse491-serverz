@@ -32,95 +32,90 @@ def handleConnection(connection, host, port):
     if clientRequestType == "GET":        
         serverResponse = ""
         if clientRequestPath == "/":
-            serverResponse = getHomepageResponse(host, port)
+            serverResponse = buildHomepageResponse(host, port)
         elif clientRequestPath == "/content":
-            serverResponse = getContentResponse(host, port)
+            serverResponse = buildContentResponse(host, port)
         elif clientRequestPath == "/file":
-            serverResponse = getFileResponse(host, port)
+            serverResponse = buildFileResponse(host, port)
         elif clientRequestPath == "/image":
-            serverResponse = getImageResponse(host, port)
+            serverResponse = buildImageResponse(host, port)
         elif clientRequestPath == "/submit":
-	    serverResponse = getFormSubmitionResponse(host, port, queryDictionary)
+	    serverResponse = \
+            buildFormSubmitionResponse(host, port, queryDictionary)
     elif clientRequestType == "POST":
         if (clientRequestPath == "/submit"):
-            serverResponse = getPostFormSubmitionResponse(host, port, clientRequest)
+            serverResponse = \
+            buildPostFormSubmitionResponse(host, port, clientRequest)
         else:
-	    serverResponse = getPostResponse(host, port)
+	    serverResponse = buildPostResponse(host, port)
 
     connection.send(serverResponse)
     connection.close()
 
-def getHomepageResponse(host, port):
-    serverResponse = ""
-    serverResponse += "HTTP/1.0 200 OK\r\n"
-    serverResponse += "Content-type: text/html\r\n"
-    serverResponse += "\r\n"
-    serverResponse += "<h1>Home</h1>"
-    serverResponse += "<p><a href=\"http://%s:%d/content\">Content</a> | " % (host, port)
-    serverResponse += "<a href=\"http://%s:%d/file\">File</a> | " % (host, port)
-    serverResponse += "<a href=\"http://%s:%d/image\">Image</a></p>" % (host, port)
-    serverResponse += "<p><form action='/submit' method='GET'>"
-    serverResponse += "Firstname: <input type='text' name='firstname'><br />"
-    serverResponse += "Lastname: <input type='text' name='lastname'><br />"
-    serverResponse += "<input type='submit' value='submit'>"
-    serverResponse += "</form></p>"
-    serverResponse += "<p><form action='/submit' method='POST'>"
-    serverResponse += "Firstname: <input type='text' name='firstname'><br />"
-    serverResponse += "Lastname: <input type='text' name='lastname'><br />"
-    serverResponse += "<input type='submit' value='submit'>"
-    serverResponse += "</form></p>"
+def buildHttpHeader():
+    return "HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n"
+
+def buildHtmlBanner(pageName, host, port):
+    return "<h1>%s</h1>" % (pageName) + \
+           "<p><a href=\"http://%s:%s/\">Home</a> | " % (host, port) + \
+           "<a href=\"http://%s:%s/content\">Content</a> | " % (host, port) + \
+           "<a href=\"http://%s:%s/file\">File</a> | " % (host, port) + \
+           "<a href=\"http://%s:%s/image\">Image</a></p>" % (host, port)
+
+def buildNameForm(method):
+    return "<form action='/submit' method='%s'>" % (method) + \
+           "Firstname: <input type='text' name='firstname'><br />" + \
+           "Lastname: <input type='text' name='lastname'><br />" + \
+           "<input type='submit' value='submit'></form>"
+
+def buildHomepageResponse(host, port):
+    serverResponse = buildHttpHeader() + buildHtmlBanner("Home", host, port) + \
+                     "<p>%s</p>" % (buildNameForm("GET")) + \
+                     "<p>%s</p>" % (buildNameForm("POST"))
     return serverResponse
 
-def getContentResponse(host, port):
-    serverResponse = ""
-    serverResponse += "HTTP/1.0 200 OK\r\n"
-    serverResponse += "Content-type: text/html\r\n"
-    serverResponse += "\r\n"
-    serverResponse += "<h1>Content Page</h1>"
-    serverResponse += "<p><a href=\"http://%s:%d/\">Home</a></p>" % (host, port)
+def buildContentResponse(host, port):
+    serverResponse = buildHttpHeader() + buildHtmlBanner("Content", host, port)
     return serverResponse
 
-def getFileResponse(host, port):
-    serverResponse = ""
-    serverResponse += "HTTP/1.0 200 OK\r\n"
-    serverResponse += "Content-type: text/html\r\n"
-    serverResponse += "\r\n"
-    serverResponse += "<h1>File Page</h1>"
-    serverResponse += "<p><a href=\"http://%s:%d/\">Home</a></p>" % (host, port)
+def buildFileResponse(host, port):
+    serverResponse = buildHttpHeader() + buildHtmlBanner("File", host, port)
     return serverResponse
 
-def getImageResponse(host, port):
-    serverResponse = ""
-    serverResponse += "HTTP/1.0 200 OK\r\n"
-    serverResponse += "Content-type: text/html\r\n"
-    serverResponse += "\r\n"
-    serverResponse += "<h1>Image Page</h1>"
-    serverResponse += "<p><a href=\"http://%s:%d/\">Home</a></p>" % (host, port)
+def buildImageResponse(host, port):
+    serverResponse = buildHttpHeader() + buildHtmlBanner("Image", host, port)
     return serverResponse
     
-def getFormSubmitionResponse(host, port, userInputQuery):
-    serverResponse = ""
-    serverResponse += "HTTP/1.0 200 OK\r\n"
-    serverResponse += "Content-type: text/html\r\n"
-    serverResponse += "\r\n"
-    serverResponse += "<h1>Hello %s %s.</h1>" % (userInputQuery['firstname'][0], userInputQuery['lastname'][0])
-    serverResponse += "<p><a href=\"http://%s:%d/\">Home</a></p>" % (host, port)
+def buildFormSubmitionResponse(host, port, userInputQuery):
+    try: 
+        serverResponse = buildHttpHeader() + \
+                         buildHtmlBanner("Form Submition", host, port) + \
+                         "<h2>Hello %s %s.</h2>" % \
+                         (userInputQuery['firstname'][0], \
+                         userInputQuery['lastname'][0])
+    except KeyError:
+        serverResponse = buildHomepageResponse(host, port) + \
+        "<h2>Please enter valid information.</h2>"
     return serverResponse
 
-def getPostResponse(host, port):
-    serverResponse = "Hello Post World."
+def buildPostResponse(host, port):
+    serverResponse = buildHttpHeader() + buildHtmlBanner("Post", host, port) + \
+                     "Hello Post World."
     return serverResponse
 
-def getPostFormSubmitionResponse(host, port, clientRequest):
+def buildPostFormSubmitionResponse(host, port, clientRequest):
     clientRequestPath = clientRequest.split()[-1]
     urlDetails = urlparse(clientRequestPath)
     userInputQuery = parse_qs(urlDetails.path)
-    serverResponse = ""
-    serverResponse += "HTTP/1.0 200 OK\r\n"
-    serverResponse += "Content-type: text/html\r\n"
-    serverResponse += "\r\n"
-    serverResponse += "<h1>Hello %s %s.</h1>" % (userInputQuery['firstname'][0], userInputQuery['lastname'][0])
-    serverResponse += "<p><a href=\"http://%s:%d/\">Home</a></p>" % (host, port)    
+    try:
+        serverResponse = buildHttpHeader() + \
+                         buildHtmlBanner("Post Form Submition", host, port) + \
+                         "<h2>Hello %s %s.</h2>" % \
+                         (userInputQuery['firstname'][0], \
+                         userInputQuery['lastname'][0])
+    except KeyError:
+        serverResponse = buildHomepageResponse(host, port) + \
+        "<h2>Please enter valid information.</h2>"
     return serverResponse    
 
 if __name__ == '__main__':
