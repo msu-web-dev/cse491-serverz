@@ -145,8 +145,7 @@ def main():
     s = socket.socket()         # Create a socket object
     host = socket.getfqdn() # Get local machine name
     port = random.randint(8000, 9999)
-    # @btj: Replace 127.0.0.1 with host
-    s.bind(('127.0.0.1', port))        # Bind to the port
+    s.bind((host, port))        # Bind to the port
 
     print 'Starting server on', host, port
     print 'The Web server URL for this would be http://%s:%d/' % (host, port)
