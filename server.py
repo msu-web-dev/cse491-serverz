@@ -57,11 +57,6 @@ def createEnviron(conn):
 
     return environ
 
-
-
-
-
-
 def handle_connection(conn):
     # Get the request and split it to get the
     # request type and the requested folder
@@ -109,36 +104,6 @@ def handle_connection(conn):
             write('')
     finally:
         conn.close()
-
-
-
-
-    # request_temp = ''
-    # while True:
-    #     request_temp += conn.recv(1)
-    #     if '\r\n\r\n' in request_temp:
-    #         break
-
-    # request = StringIO.StringIO(request_temp)
-    # environ = {}
-
-    # environ['REQUEST_METHOD'], path, \
-    # environ['SERVER_PROTOCOL'] = request.readline().split()
-
-    # # Get the path information
-    # path = urlparse.urlparse(path)
-    # environ['PATH_INFO'] = path.path
-    # environ['QUERY_STRING'] = path.query
-
-    # # Get the query string information
-    # if environ['REQUEST_METHOD'] == 'GET':
-    #     GetRequests(conn, environ, request)
-    # elif environ['REQUEST_METHOD'] == 'POST':
-    #     PostRequests(conn, environ, request)
-    # else:
-    #     error_500_not_implemented(conn, environ)
-
-    # conn.close()
 
 def main():
     s = socket.socket()         # Create a socket object

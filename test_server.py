@@ -34,7 +34,7 @@ def test_handle_connection():
     server.handle_connection(conn)
 
     assert 'HTTP/1.0 200 OK\r\n' in conn.sent, 'Got: %s' % (repr(conn.sent),)
-    assert '<h1>Welcome to Brian\'s Web Server</h1>' in conn.sent, \
+    assert '<h1>Welcome to msu-web-dev\'s Web Server</h1>' in conn.sent, \
     'Got: %s' % (repr(conn.sent),)
 
 
