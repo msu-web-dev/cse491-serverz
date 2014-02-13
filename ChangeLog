@@ -16,3 +16,9 @@
  * Refactored handle_connection function, moving all the views into their
 	own respective functions
  * Added error pages for incorrect request type, and incorrect url
+
+2014-02-12 Brian Jurgess
+ * Implemented the WSGI spec and moved all the html generation content
+   into app.py
+ * Updated handle_connection to behave like a wsgi server
+ * Updated templates to extend a base template called "base.html"

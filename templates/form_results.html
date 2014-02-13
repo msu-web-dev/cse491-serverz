@@ -1,5 +1,7 @@
-<html>
-	<body>
-    	Hello {{ firstname }} {{ lastname }}.
-    </body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Form Results{% endblock %}
+
+{% block page_content %}
+    <p>Hello {{ firstname }} {{ lastname }}.</p>
+{% endblock %}

@@ -1,12 +1,13 @@
-<html>
-	<body>
-		<h1>Welcome to Brian's Web Server</h1>
-		<div>
-		    <a href="/content">Content</a><br />
-		    <a href="/image">Image</a><br />
-		    <a href="/file">File</a><br />
-		    <a href="/form">Form Get</a><br />
-		    <a href="/formpost">Form Post</a><br />
-    	</div>
-    </body>
-</html>
+{% extends "base.html" %}
+{% block title %}CSE491 Serverz{% endblock %}
+
+{% block page_content %}
+	<h1>Welcome to Brian's Web Server</h1>
+	<div>
+	    <a href="/content">Content</a><br />
+	    <a href="/image">Image</a><br />
+	    <a href="/file">File</a><br />
+	    <a href="/form">Form Get</a><br />
+	    <a href="/formpost">Form Post</a><br />
+	</div>
+{% endblock %}
