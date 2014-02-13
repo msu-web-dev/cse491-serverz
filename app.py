@@ -10,7 +10,6 @@ import sys
 loader = jinja2.FileSystemLoader('./templates')
 env = jinja2.Environment(loader=loader)
 
-
 def hw5_app(environ, start_response):
 	setup_testing_defaults(environ)
 

@@ -1,4 +1,4 @@
-This is a CSE 491/Web dev project; see http://msu-web-dev.readthedocs.org/.
+This is a CSE 491/Web dev project; see http://msu-web-dev.readthedocs.org/
 
 1. Running server.py on arctic.
 ===============================
