@@ -1,6 +1,8 @@
-<html>
-	<body>
-    	<h1>ERROR 501 NOT IMPLEMENTED</h1>
-    	<p>This type of request has not been implemented.</p>
-    </body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Error 500{% endblock %}
+
+{% block page_content %}
+	<h1>ERROR 501 NOT IMPLEMENTED</h1>
+	<p>This type of request has not been implemented.</p>
+{% endblock %}

@@ -7,139 +7,138 @@ import cgi
 import StringIO
 import jinja2
 import sys
+from app import make_app
+import time
 
-# Set up the loader and environment
-# for jinja2 templating engine
-loader = jinja2.FileSystemLoader('./templates')
-env = jinja2.Environment(loader=loader)
+def createEnviron(conn):
+    environ = {}
+
+    request = ''
+    while True:
+        recv_value = conn.recv(1)
+        request += recv_value
+        if '\r\n\r\n' in request:
+            break
+
+    request_headers, request_body = request.split('\r\n\r\n')
+
+    try:
+        request_line, headers_string = request_headers.split('\r\n', 1)
+    except:
+        environ['REQUEST_METHOD'], PATH,\
+        environ['SERVER_PROTOCOL'] = request_headers.split(' ')
+        PATH = urlparse.urlparse(PATH)
+        environ['PATH_INFO'] = PATH.path
+        environ['QUERY_STRING'] = PATH.query
+
+        return environ
+
+    environ['REQUEST_METHOD'], PATH, \
+    environ['SERVER_PROTOCOL'] = request_line.split(' ')
+
+    PATH = urlparse.urlparse(PATH)
+
+    environ['PATH_INFO'] = PATH.path
+    environ['QUERY_STRING'] = PATH.query
+
+    headers = headers_string.split('\r\n')
+
+    headerDict = {}
+    for line in headers:
+        k, v = line.split(': ', 1)
+        headerDict[k.lower()] = v
+
+    if 'content-length' in headerDict.keys():
+        environ['CONTENT_LENGTH'] = int(headerDict['content-length'])
+        environ['wsgi.input'] = StringIO.StringIO(conn.recv(int(headerDict['content-length'])))
+
+    if 'content-type' in headerDict.keys():
+        environ['CONTENT_TYPE'] = headerDict['content-type']    
+
+    return environ
+
+
+
+
+
 
 def handle_connection(conn):
     # Get the request and split it to get the
     # request type and the requested folder
-    request_temp = ''
-    while True:
-        request_temp += conn.recv(1)
-        if '\r\n\r\n' in request_temp:
-            break
+    headers_set = []
+    headers_sent = []
 
-    request = StringIO.StringIO(request_temp)
-    environ = {}
+    def write(data):
+        out = StringIO.StringIO()
 
-    environ['REQUEST_METHOD'], path, \
-    environ['SERVER_PROTOCOL'] = request.readline().split()
+        if not headers_set:
+            raise AssertionError("write() called before start_response()")
+        elif not headers_sent:
+            status, response_headers = headers_sent[:] = headers_set
+            out.write('HTTP/1.0 %s\r\n' % status)
+            for header in response_headers:
+                out.write('%s: %s\r\n' % header)
+            out.write('\r\n')
 
-    # Get the path information
-    path = urlparse.urlparse(path)
-    environ['PATH_INFO'] = path.path
-    environ['QUERY_STRING'] = path.query
+        out.write(data)
+        conn.send(out.getvalue())
 
-    # Get the query string information
-    if environ['REQUEST_METHOD'] == 'GET':
-        GetRequests(conn, environ, request)
-    elif environ['REQUEST_METHOD'] == 'POST':
-        PostRequests(conn, environ, request)
-    else:
-        error_500_not_implemented(conn, environ)
+    def start_response(status, response_headers, exc_info=None):
+        if exc_info:
+            try:
+                if headers_sent:
+                    raise exc_info[1].with_traceback(exc_info[2])
+            finally:
+                exc_info = None
+        elif headers_set:
+            raise AssertionError("Headers already set!")
 
-    conn.close()
+        headers_set[:] = [status, response_headers]
+        headers_set[1].append(('Date', time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())))
+        
+        return write
 
-def GetRequests(conn, environ, request):
-    if environ['PATH_INFO'] == '/':
-        send200(conn)
-        index(conn, environ)
-    elif environ['PATH_INFO'] == '/content':
-        send200(conn)
-        content_page(conn, environ)
-    elif environ['PATH_INFO'] == '/file':
-        send200(conn)
-        file_page(conn, environ)
-    elif environ['PATH_INFO'] == '/image':
-        send200(conn)
-        image_page(conn, environ)
-    elif environ['PATH_INFO'] == '/form':
-        send200(conn)
-        form_page(conn, environ)
-    elif environ['PATH_INFO'] == '/formpost':
-        send200(conn)
-        form_post_page(conn, environ)
-    elif environ['PATH_INFO'] == '/submit':
-        send200(conn)
-        form_get_results_page(conn, environ)
-    else:
-        send404(conn)
-        error_404(conn, environ)
+    wsgi_app = make_app()
+    environ = createEnviron(conn)
+    result = wsgi_app(environ, start_response)
 
-def PostRequests(conn, environ, request):
-    d = {}
-    line = request.readline()
-    while line != '\r\n':
-        k, v = line.split(': ')
-        d[k.lower()] = v.strip('\r\n')
-        line = request.readline()
-
-    if 'content-length' in d.keys():
-        request = StringIO.StringIO(conn.recv(int(d['content-length'])))
-
-    form = cgi.FieldStorage(headers=d, fp=request, environ=environ)
-
-    if environ['PATH_INFO'] == '/submitpost':
-        send200(conn)
-        form_post_results_page(conn, form)
-    else:
-        send404(conn)
-        error_404(conn, environ)
-
-def send200(conn):
-    conn.send('HTTP/1.0 200 OK\r\n')
-    conn.send('Content-type: text/html\r\n')
-    conn.send('\r\n')
-
-def send404(conn):
-    conn.send('HTTP/1.0 404 NOT FOUND\r\n')
-    conn.send('Content-type: text/html\r\n')
-    conn.send('\r\n')
-
-def send501(conn):
-    conn.send('HTTP/1.0 501 Not Implemented\r\n')
-    conn.send('Content-type: text/html\r\n')
-    conn.send('\r\n')
-
-def index(conn, environ):
-    conn.send(env.get_template('index.html').render())
-
-def content_page(conn, environ):
-    conn.send(env.get_template('content.html').render())
-
-def file_page(conn, environ):
-    conn.send(env.get_template('file.html').render())
-
-def image_page(conn, environ):
-    conn.send(env.get_template('image.html').render())
-
-def form_page(conn, environ):
-    conn.send(env.get_template('form.html').render())
-
-def form_post_page(conn, environ):
-    conn.send(env.get_template('form_post.html').render())
-
-def form_get_results_page(conn, environ):
-    query_string = urlparse.parse_qs(environ['QUERY_STRING'])
-    vars = {'firstname':query_string['firstname'][0], 'lastname':query_string['lastname'][0]}
-
-    conn.send(env.get_template('form_results.html').render(vars))
-
-def form_post_results_page(conn, form):
-    vars = {'firstname':form.getvalue('firstname'), 'lastname':form.getvalue('lastname')}
-    
-    conn.send(env.get_template('form_results.html').render(vars))
-
-def error_404(conn, environ):
-    conn.send(env.get_template('error404.html').render({'PATH': environ['PATH_INFO']}))
+    try:
+        if result:
+            write(result)
+        if not headers_sent:
+            write('')
+    finally:
+        conn.close()
 
 
-def error_500_not_implemented(conn, environ):
-    send501(conn)
-    conn.send(env.get_template('error500_not_implemented.html').render())
+
+
+    # request_temp = ''
+    # while True:
+    #     request_temp += conn.recv(1)
+    #     if '\r\n\r\n' in request_temp:
+    #         break
+
+    # request = StringIO.StringIO(request_temp)
+    # environ = {}
+
+    # environ['REQUEST_METHOD'], path, \
+    # environ['SERVER_PROTOCOL'] = request.readline().split()
+
+    # # Get the path information
+    # path = urlparse.urlparse(path)
+    # environ['PATH_INFO'] = path.path
+    # environ['QUERY_STRING'] = path.query
+
+    # # Get the query string information
+    # if environ['REQUEST_METHOD'] == 'GET':
+    #     GetRequests(conn, environ, request)
+    # elif environ['REQUEST_METHOD'] == 'POST':
+    #     PostRequests(conn, environ, request)
+    # else:
+    #     error_500_not_implemented(conn, environ)
+
+    # conn.close()
 
 def main():
     s = socket.socket()         # Create a socket object
