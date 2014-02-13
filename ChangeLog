@@ -1,3 +1,7 @@
+2014-02-06  Andrew Sundheimer
+ * Homework 4 - Updating my project with my initial implementation of hw4.
+
+
 2014-02-04  Andrew Sundheimer
  * Cleaning up server.py and associated test cases. Fixed a bug with null values when submitting a form.
 
