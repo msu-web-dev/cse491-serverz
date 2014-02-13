@@ -53,16 +53,6 @@ def PostRequest(environ):
 		return error_404(environ)
 
 
-
-def header200():
-	return '200 OK'
-
-def header404():
-	return '404 NOT FOUND'
-
-def header501():
-	return '501 NOT IMPLEMENTED'
-
 def index(environ):
     return '200 OK', [('Content-type','text/html')], \
     env.get_template('index.html').render().encode('latin-1', 'replace')
