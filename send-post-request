@@ -9,5 +9,3 @@ r = requests.post(url, files=dict(firstname='bar', lastname='foo'))
 
 print r.status_code
 print r.text
-
-

@@ -108,7 +108,7 @@ def test_501_error():
 
     server.handle_connection(conn)
 
-    assert 'HTTP/1.0 501 Not Implemented\r\n' in conn.sent, 'Got: %s' % (repr(conn.sent),)
+    assert 'HTTP/1.0 501 NOT IMPLEMENTED\r\n' in conn.sent, 'Got: %s' % (repr(conn.sent),)
     assert '<h1>ERROR 501 NOT IMPLEMENTED</h1>' in conn.sent, 'Got: %s' % (repr(conn.sent),)
 
 def test_404_error():
