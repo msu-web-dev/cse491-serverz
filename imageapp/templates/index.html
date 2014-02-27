@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<a href='upload'>Upload an image</a> |
+<a href='image'>Show most recent image</a>
+
+<br/>
+
+<p>Latest Image:</p>
+<img src="image_raw?special=latest" />
+{% endblock %}
