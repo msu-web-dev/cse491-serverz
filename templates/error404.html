@@ -1,6 +1,9 @@
-<html>
-	<body>
+{% extends "base.html" %}
+{% block title %}
+ERROR 404
+{% endblock %}
+
+{% block page_content %}
     	<h1>404 NOT FOUND</h1>
     	<p>Could not find {{ PATH }}. Please try again.</p>
-    </body>
-</html>
+{% endblock %}

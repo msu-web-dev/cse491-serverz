@@ -5,6 +5,7 @@ import time
 import urlparse
 import StringIO
 import sys
+<<<<<<< HEAD
 #from app import make_app
 import imageapp
 import time
@@ -24,6 +25,25 @@ def make_app():
         _the_app = quixote.get_wsgi_app()
 
     return _the_app
+=======
+from app import make_app
+import time
+from wsgiref.validate import validator
+
+# import quixote
+# from quixote.demo import create_publisher
+#from quixote.demo.mini_demo import create_publisher
+#from quixote.demo.altdemo import create_publisher
+
+# _the_app = None
+# def make_app():
+#     global _the_app
+#     if _the_app is None:
+#         p = create_publisher()
+#         _the_app = quixote.get_wsgi_app()
+
+#     return _the_app
+>>>>>>> master
 
 
 def getRequest(conn):
@@ -71,6 +91,7 @@ def createEnviron(conn):
         except:
             request_line = request_headers
             headers_string = ''
+<<<<<<< HEAD
 
         environ['REQUEST_METHOD'], PATH, \
         environ['SERVER_PROTOCOL'] = request_line.split(' ')
@@ -89,6 +110,26 @@ def createEnviron(conn):
             k, v = line.split(': ', 1)
             headerDict[k.lower()] = v
 
+=======
+
+        environ['REQUEST_METHOD'], PATH, \
+        environ['SERVER_PROTOCOL'] = request_line.split(' ')
+
+        PATH = urlparse.urlparse(PATH)
+
+        environ['PATH_INFO'] = PATH.path
+        environ['QUERY_STRING'] = PATH.query
+        
+        headers = []
+        if headers_string != '':
+            headers = headers_string.split('\r\n')
+
+        headerDict = {}
+        for line in headers:
+            k, v = line.split(': ', 1)
+            headerDict[k.lower()] = v
+
+>>>>>>> master
         if 'content-length' in headerDict.keys():
             environ['CONTENT_LENGTH'] = headerDict['content-length']
         
@@ -96,9 +137,12 @@ def createEnviron(conn):
 
         if 'content-type' in headerDict.keys():
             environ['CONTENT_TYPE'] = headerDict['content-type']
+<<<<<<< HEAD
 
         if 'cookie' in headerDict.keys():
             environ['HTTP_COOKIE'] = headerDict['cookie']
+=======
+>>>>>>> master
         
             
     return environ

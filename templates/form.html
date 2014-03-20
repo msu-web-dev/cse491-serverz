@@ -1,9 +1,10 @@
-<html>
-	<body>
-	    <form action="/submit" method="GET">
-		    <input type="text" name="firstname"/>
-		    <input type="text" name="lastname"/>
-		    <input type="submit" value="Submit" />
-    	</form>
-    </body>
-</html>
+{% extends "base.html" %}
+{% block title %}Form{% endblock %}
+
+{% block page_content %}
+    <form action="/submit" method="GET">
+	    <input type="text" name="firstname"/>
+	    <input type="text" name="lastname"/>
+	    <input type="submit" value="Submit" />
+	</form>
+{% endblock %}
