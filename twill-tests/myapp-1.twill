@@ -1,0 +1,14 @@
+go /
+code 200
+
+go /content
+code 200
+
+go /file
+code 200
+
+go /
+code 200
+
+go /image
+code 200

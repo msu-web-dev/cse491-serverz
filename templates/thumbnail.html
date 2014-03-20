@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<title>fenderic - thumbnail</title>
+
+<h1>Thumbnails</h1>
+<p>click on any of the thumbnails below to view the image at it's fullsize</p>
+<p>the pizza is resized based on the height and the width of the browser window.</p>
+<p>the b nektar logo is set to a specified pixel height and width (100px each)</p>
+<p>the picture of ash is set to scale relatively to a specified number (0.33)</p>
+<p>
+<a href='http://www.ericrichardaustin.com/pizza.jpg'><img height=25% width=25% src='http://www.ericrichardaustin.com/pizza.jpg'></a><br>
+<br><br<br><br>
+<a href='http://www.ericrichardaustin.com/bnektar.jpg'><img style="height:100px;width:100px;" src='http://www.ericrichardaustin.com/bnektar.jpg'></a><br>
+<a href='http://www.ericrichardaustin.com/ash.jpg'><img style="-webkit-transform: scale(0.33); -moz-transform: scale(0.33); -ms-transform: scalee(0.33); -o-transform: scale(0.33); transform: scale(0.33);" src='http://www.ericrichardaustin.com/ash.jpg'></a>
+{% endblock %}
