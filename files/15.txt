@@ -1,0 +1,2 @@
+16. “One of my most productive days was throwing away 1000 lines of code.”
+- Ken Thompson (computer scientist, early developer of UNIX OS)

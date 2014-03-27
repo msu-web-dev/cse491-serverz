@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+	<h1>Image List Page</h1>
+	<ul id="imageList">
+	{% for image in images %}
+		<li>
+			<a href="images/{{ image }}">
+				{{ image }}<br />
+				<img src="images/{{ image }}" width='128' alt="{{ image }}" />
+			</a>
+		</li>
+	{% endfor %}
+{% endblock %}

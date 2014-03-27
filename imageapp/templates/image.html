@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script type="text/javascript">
+
+alert("something happened!");
+
+confirm("may I delete all your files?");
+
+prompt("some question","defaultvalue");
+
+</script>
+
+Here is your image:
+<p>
+<img width=40% src='image_raw?special=latest'/>
+
+{% endblock %}

@@ -1,0 +1,2 @@
+3. “Measuring programming progress by lines of code is like measuring aircraft building progress by weight.”
+- Bill Gates (co-founder of Microsoft)

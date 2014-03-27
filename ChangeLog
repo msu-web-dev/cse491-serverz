@@ -1,0 +1,39 @@
+2014-01-07  Titus Brown  <t@Titus-MacBook-Air-2.local>
+	* Initialized repository, created server.py and README.
+
+2014-01-09  Andrew Sundheimer
+	*	Updated server.py to respond with 200 OK, send "Hello World" html
+
+2014-01-17  Andrew Sundheimer
+	*	Updated server.py to respond to different URLs, post requests
+	*	Added a nose test script
+	*	Fixed server.py to pass nose tests
+
+2014-01-23  Andrew Sundheimer
+	*	Updated server.py to split  less
+	*	Replaced multiple if/else with dict
+	*	Updated tests slightly to match modified html content
+
+2014-01-30  Andrew Sundheimer
+	*	Revamp tests
+	*	Fix POST
+	*	Check and increase test coverage
+
+2014-02-05  Andrew Sundheimer
+	*	Fix FieldStorage
+	*	Update to work with arbitrary length requests
+	*	Refactor everything into handle_connection
+	*	Generally tidy up code
+	*	Templates with jinja2
+
+2014-02-13	Andrew Sundheimer
+	*	Update to work with unicode
+	*	Make app and server separate, wsgi compliant
+
+2014-03-20 Andrew Sundheimer
+	* 	Added /imagelist url to display thumbnails of all images
+		* New template with for-loop
+		* New app function to list images in the dir
+
+2014-03-27
+	*	Look at twill (dev branch) on my github

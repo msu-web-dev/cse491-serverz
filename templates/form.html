@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+	<h1>Form Page</h1>
+	Test this form:<br />
+	<form action='submit' method='POST'>
+		Firstname: <input type='text' name='firstname' /><br />
+		Lastname: <input type='text' name='lastname' /><br />
+		<input type='submit' name='submit' />
+	</form>
+{% endblock %}
