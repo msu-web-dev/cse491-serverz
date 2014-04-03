@@ -1,0 +1,2 @@
+8. “When debugging, novices insert corrective code; experts remove defective code.”
+- Richard Pattis
