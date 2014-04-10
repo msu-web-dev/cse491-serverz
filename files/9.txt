@@ -1,2 +1,0 @@
-10. “Most good programmers do programming not because they expect to get paid or get adulation by the public, but because it is fun to program.”
-- Linus Torvalds (Finnish American, software engineer and hacker, principal force behind the development of the Linux kernel)

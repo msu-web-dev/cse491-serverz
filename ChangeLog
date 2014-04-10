@@ -1,39 +1,42 @@
 2014-01-07  Titus Brown  <t@Titus-MacBook-Air-2.local>
-	* Initialized repository, created server.py and README.
 
-2014-01-09  Andrew Sundheimer
-	*	Updated server.py to respond with 200 OK, send "Hello World" html
+ * Initialized repository, created server.py and README.
 
-2014-01-17  Andrew Sundheimer
-	*	Updated server.py to respond to different URLs, post requests
-	*	Added a nose test script
-	*	Fixed server.py to pass nose tests
+2014-01-08 Andrew Sundheimer
+ * Modified the server response to return the required string from step 2
+ * Added print c.recv(1000) to output the request header
 
-2014-01-23  Andrew Sundheimer
-	*	Updated server.py to split  less
-	*	Replaced multiple if/else with dict
-	*	Updated tests slightly to match modified html content
+2014-01-21 Andrew Sundheimer
+ * Added test_server.py
+ * Modified handle_connection adding ability to handle POST, GET and
+ *	different paths
 
-2014-01-30  Andrew Sundheimer
-	*	Revamp tests
-	*	Fix POST
-	*	Check and increase test coverage
+2014-01-28 Andrew Sundheimer
+ * Added the ability to parse GET and POST forms
+ * Refactored handle_connection function, moving all the views into their
+	own respective functions
+ * Added error pages for incorrect request type, and incorrect url
 
-2014-02-05  Andrew Sundheimer
-	*	Fix FieldStorage
-	*	Update to work with arbitrary length requests
-	*	Refactor everything into handle_connection
-	*	Generally tidy up code
-	*	Templates with jinja2
+2014-02-12 Andrew Sundheimer
+ * Implemented the WSGI spec and moved all the html generation content
+   into app.py
+ * Updated handle_connection to behave like a wsgi server
+ * Updated templates to extend a base template called "base.html"
 
-2014-02-13	Andrew Sundheimer
-	*	Update to work with unicode
-	*	Make app and server separate, wsgi compliant
+2014-02-26 Andrew Sundheimer
+ * Implemented cookie handling to server.py
+ * Update server.py to use the imageapp provide
+ * Updated the index page of the image app to display the latest image
 
 2014-03-20 Andrew Sundheimer
-	* 	Added /imagelist url to display thumbnails of all images
-		* New template with for-loop
-		* New app function to list images in the dir
+ * Implemented twill tests
+ * Implemented the imageapp in django. You can just run the django through my server.py by doing python -A django. I could not get the image uploading to work on arctic, however, so you will need to run it on your personal machine. 
 
-2014-03-27
-	*	Look at twill (dev branch) on my github
+2014-03-25 Andrew Sundheimer
+ * Implemented wsgi middleware component that records all traffic between the server and the application and then outputs it to TRAFFIC.log. The middleware component is located at ./middleware_components/wsgi_traffic_recording.py. Just wrap the wsgi app in server.py with Recorder() in order to enable recording of the wsgi traffic. This is already done by default.
+ * Implemented the chat app and the quotes app
+
+2014-03-30 Andrew Sundheimer
+ * Implemented a theme for the imageapp that was recreated with Django
+ * Implemented a sqlite3 database for persistence. 
+ * To run, just enter the command ./server.py -A django

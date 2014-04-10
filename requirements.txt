@@ -1,0 +1,20 @@
+#####################################
+# Use this file to ensure all the proper
+# python packages have been installed
+
+# Frameworks used for various apps
+Django
+Quixote
+
+# Templating engine
+Jinja2
+
+# These are testing packages
+coverage
+nose
+
+# Needed to run the image app in django
+Pillow
+
+# WSGI validation
+wsgiref

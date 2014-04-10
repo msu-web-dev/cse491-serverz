@@ -34,14 +34,12 @@ $(document).ready(function() {
 
      $("message", xml).each( function(id) {
         message = $("message", xml).get(id);
-
+        time = $("created", xml).text()
+        console.log(time);
         author = $("author", message).text();
         content = $("text", message).text();
-        time = new Date();
-        time.setTime(timestamp*1000)
 
-        $("#messagewindow").prepend("<i>[" + time.toLocaleString() + "] </i>" + "<b>" 
-                                    + author + "</b>:" + content 
+        $("#messagewindow").prepend("<b>" + author + "(" + time + ")</b>:" + content 
                                     + "<br>");
      });
   };

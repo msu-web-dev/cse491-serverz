@@ -1,5 +1,7 @@
 {% extends "base.html" %}
-{% block content %}
-	<h1>File Page</h1>
-	Files go here, once there are any :) <br />
+{% block title %}File{% endblock %}
+
+{% block page_content %}
+   	<iframe src="/file.txt" type="text/plain"></iframe>
 {% endblock %}
+

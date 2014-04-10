@@ -1,10 +1,13 @@
 {% extends "base.html" %}
-{% block content %}
-	<h1>Hello, world</h1>
-	This is brtaylor92's web server.<br />
-	<a href='/content'>Content</a><br />
-	<a href='/file'>Files</a><br />
-	<a href='/image'>Images</a><br />
-	<a href='/form'>Form</a><br />
-	<a href='/imagelist'>Image list></a><br />
+{% block title %}CSE491 Serverz{% endblock %}
+
+{% block page_content %}
+	<h1>Welcome to Brian's Web Server</h1>
+	<div>
+	    <a href="/content">Content</a><br />
+	    <a href="/image">Image</a><br />
+	    <a href="/file">File</a><br />
+	    <a href="/form">Form Get</a><br />
+	    <a href="/formpost">Form Post</a><br />
+	</div>
 {% endblock %}

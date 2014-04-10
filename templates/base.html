@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title> brtaylor92: {{ path }} </title>
+		
+		<title>{% block title %}{% endblock %}</title>
+
 	</head>
 	<body>
-		{% block content %}
+		
+		{% block page_content %}
 		{% endblock %}
+
 	</body>
 </html>
