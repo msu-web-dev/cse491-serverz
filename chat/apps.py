@@ -31,11 +31,10 @@ class ChatApp(object):
       for m in new_messages:
          x.append("""\
 <message>
- <created>%s</created>
  <author>%s</author>
  <text>%s</text>
 </message>
-""" % (time.strftime("%H:%M:%S", time.gmtime(m.timestamp)), m.user, m.message))
+""" % (m.user, m.message))
 
       if x:                             # new messages received?
          # yes
