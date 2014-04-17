@@ -1,42 +1,100 @@
+2014-04-06  
+* Add project 16 (count 11)
+	Add data persistence in sqlite or MySQL or PostgreSQL
+Data persistance is done through Django sqlite - image and comment database 
+All projects up to date is successfully reimplemented using database
+It would technically work for MySQL, NoSQL,... as Django has support for
+these as well, all you have to do is to change core.settings.py 
+
+2014-04-03  
+* Add project 1 (count 10)
+	Reimplement the imageapp functionality (minus the silly JavaScript) in your own app.py, or Django or flask.
+The django app is implement in iDjango folder
+It can be run using "python server.py -a -django"
+All projects up to date is successfully implemented in django app:
+	Project 22, 23, 12, 8, 5, 4, 6, 7
+
+2014-03-28  
+* Add project 22 (count 9)
+	Make a thumbnail list using server-side resizing on the fly (in
+	Python code, using PIL or some other image manipulation
+	library). The distinguishing feature here should be that large
+	images are not downloaded to the browser and resized there (as
+	would happen if you used image attributes; see #5).
+I used Pillow (a PIL fork with JPEG support) to generate image thumbnail
+The thumbnail is saved in the image dictionary like a metadata and can be
+reference with /image_thumbnail?i=
+
+* Add project 23 (count 8)
+	Write a URL handler so that each image is referred to by its
+	number, e.g. /image_raw/10; make it so that going to the latest
+	image in your imageapp redirects to the right image number. (5
+	pts; app_feature)
+Already implemented from previous version with /image?i=
+
+2014-03-25  
+
+Integrate chat and quote app
+Add time showing in human readable format to add comment field
+	in imageapp (/image) for part 2 of hw 9
+
+2014-03-20  
+	
+* Add project 12 (count 7)
+	Implement AJAX image upload with JQuery.
+I didn't actually implement AJAX image upload, but I did implement AJAX
+comment upload, which is harder actually so I think that it should count.
+Using jquery and javascripts, I changed image.html to add comment using
+AJAX. The server send back the info using JSON.
+Comment get updated automatically via timestamp from server.
+Refresh comments by adding an empty comment is possible.
+	
+2014-03-19  
+
+* Add project 8 (count 6)
+	Add the ability to comment on images.
+Save comment as a list in metadata of images (commentList)
+Submit comment through the image page
+	
+* Add project 5 (count 5)
+	Add a URL that provides a list of images, resized to thumbnails
+	(you can just img size, not actual resizing  that will be a
+	separate project ;). (/image_list)
+Use image.py to generate a dictionary contains relevant information to
+render with image_list.html
+
+2014-03-18  
+
+* Add project 6, 7 (count 4)
+	Add image “metadata” uploading, storage, and retrieval: image
+	name, description, etc. (/upload)
+Change how to store image in image.py
+image is now store as a dictionary with data and other metadata stuff
+
+	Add image metadata search (find image by ...) (/search)
+Allow retrieve image through form with proper query
+Search by matching substring in description or file name
+Return search result as a list of dictionary to render with Jinja
+
+2014-03-17  
+	
+* Add project 4 (count 2)
+	Change imageapp to support JPEG and TIFF. (5 pts)
+Add a list in imageapp/image.py to save filename, therefore can
+know the content type of image and support different image files
+
+* Add project 11 (count 1)
+	Write something that prevents denial of services by uploading
+	gigabyte files, or “forever” connections that upload things really
+	slowly. Be sure to write a client-side test. (5 pts.)
+Add if statement to check content-length is bigger than 1GB
+Add signals to check for control execution time and check for timeout
+
+* Merge from hw2
+
 2014-01-07  Titus Brown  <t@Titus-MacBook-Air-2.local>
 
  * Initialized repository, created server.py and README.
 
-2014-01-08 Andrew Sundheimer
- * Modified the server response to return the required string from step 2
- * Added print c.recv(1000) to output the request header
-
-2014-01-21 Andrew Sundheimer
- * Added test_server.py
- * Modified handle_connection adding ability to handle POST, GET and
- *	different paths
-
-2014-01-28 Andrew Sundheimer
- * Added the ability to parse GET and POST forms
- * Refactored handle_connection function, moving all the views into their
-	own respective functions
- * Added error pages for incorrect request type, and incorrect url
-
-2014-02-12 Andrew Sundheimer
- * Implemented the WSGI spec and moved all the html generation content
-   into app.py
- * Updated handle_connection to behave like a wsgi server
- * Updated templates to extend a base template called "base.html"
-
-2014-02-26 Andrew Sundheimer
- * Implemented cookie handling to server.py
- * Update server.py to use the imageapp provide
- * Updated the index page of the image app to display the latest image
-
-2014-03-20 Andrew Sundheimer
- * Implemented twill tests
- * Implemented the imageapp in django. You can just run the django through my server.py by doing python -A django. I could not get the image uploading to work on arctic, however, so you will need to run it on your personal machine. 
-
-2014-03-25 Andrew Sundheimer
- * Implemented wsgi middleware component that records all traffic between the server and the application and then outputs it to TRAFFIC.log. The middleware component is located at ./middleware_components/wsgi_traffic_recording.py. Just wrap the wsgi app in server.py with Recorder() in order to enable recording of the wsgi traffic. This is already done by default.
- * Implemented the chat app and the quotes app
-
-2014-03-30 Andrew Sundheimer
- * Implemented a theme for the imageapp that was recreated with Django
- * Implemented a sqlite3 database for persistence. 
- * To run, just enter the command ./server.py -A django
+ * Get server.py work
+ 

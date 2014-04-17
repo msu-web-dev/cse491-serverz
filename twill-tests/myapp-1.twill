@@ -1,39 +1,30 @@
-go /content
+go /
 code 200
-find "Content page!"
-
-back
-code 200
-find "Welcome to Brian\'s Web Server"
-
-go /image
-code 200
-
-back
-code 200
-find "Welcome to Brian\'s Web Server"
 
 go /file
 code 200
 
-back
+go /content
 code 200
-find "Welcome to Brian\'s Web Server"
+
+go /image
+code 200
+
+go /environ
+code 200
 
 go /form
-formvalue 1 firstname Brian
-formvalue 1 lastname Jurgess
+code 200
+
+go /formPost
+code 200
+
+go /form
+fv 1 firstname Minh
+fv 1 lastname Pham
 submit
 
-find "Hello Brian Jurgess."
+find "Minh Pham"
 
-go /
-code 200
-find "Welcome to Brian\'s Web Server"
-
-go /formpost
-formvalue 1 firstname Brian
-formvalue 1 lastname Jurgess
-submit 
-
-find "Hello Brian Jurgess."
+go /fake
+code 404
