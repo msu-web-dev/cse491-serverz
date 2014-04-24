@@ -1,4 +1,3 @@
-# Minh Pham
 # CSE 491
 
 import app

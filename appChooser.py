@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# Minh Pham
 # CSE 491
 
 from app import make_app # for making a simple app
