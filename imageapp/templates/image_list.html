@@ -2,24 +2,19 @@
 
 {% block content %}
 
-<div class="contentTitle">
-<h1>Here are all of the images that have been uploaded!</h1>
-</div>
+<h2>Here are all of the images that have been uploaded!</h2>
+(most recently uploaded first)
 <div id="imageContainer">
 </div>
 <script type="text/javascript">
-    $.post("image_numbers",
-         function(numbers) { 
-            numbers = numbers.replace('[', '')
-            numbers = numbers.replace(']', '')
-            numbers = numbers.split(', ')
-            for (var i = numbers.length - 1; i >= 0; i--) {
-                console.log(parseInt(numbers[i]))
-
+    $.post("image_count",
+         function(count) { 
+            count = parseInt(count);
+            for (var i = count; i > 0; i--) {
                 $("#imageContainer").append("<div style='padding-top:10px'>" + 
-                    "<a href='/image?num=" + numbers[i] + "'>" +
-                    "<img width='200' src='image_raw?num=" + numbers[i] + "' /></a></div>");
-            };
+                    "<a href='/image?num=" + i + "'>" +
+                    "<img width='200' src='image_raw?num=" + i + "' /></a></div>");
+            }
          }
     );
 </script>
