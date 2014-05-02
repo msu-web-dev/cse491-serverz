@@ -2,11 +2,39 @@
 <html>
  <head>
   <script src='jquery'></script>
-
   <meta http-equiv="Content-Type" content="text/html">
+  <link rel="stylesheet" type="text/css" href="https://www.msu.edu/~keifcame/style.css">
  </head>
  <body>
+    <div id="page">
+        <div id="header">
+            <h1>Image Upload App</h1>
+            <h2>Modified by Jason Bull<h2>
+        </div>
+<div class="contentText">
+
+  <span style="display:none" id='loggedInAs'>Logged in as: <span id='username'> {{ username }} 
+  </span></span>
+<div id="notLoggedInOptions" style="display:none">
+<a href="login">Login</a> | <a href="create_account">Create Account</a>
+</div>
+<p><a style="display:none" id="logoutLink" href="logout">Logout</a>
+</div>
 {% block content %}
 {% endblock %}
+    </div>
+    <div id="footer"></div>
  </body>
+
+<script type="text/javascript">
+var username = $.trim($('#username').text())
+console.log(username)
+if(username != '')
+{
+  $('#loggedInAs').show()
+  $('#logoutLink').show()
+} else {
+  $('#notLoggedInOptions').show()
+}
+</script>
 </html>
