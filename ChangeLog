@@ -104,55 +104,6 @@
 	  authentication I can change this so each user can only upvote/downvote
 		once. For now, you can just click it as much as you want.
 
-2014-4-16 Cameron Keif
-	* PROJECT: Swipe a template from oswd.org and put it in place on your
-	  imageapp server.
-
-		- I link to the CSS file on my personal web page because I use it on there
-		  as well because I think it's pretty. :)
-
-		- I reference the css file in base.html, so it is referenced in all pages.
-
-	* PROJECT: Implement AJAX image upload with JQuery.
-
-		- I replaced upload2 because I hated it and never used it with the ajax
-			upload, and changed the title to reflect that.
-
-		- When you upload the image, it will show the uploaded image on that page,
-			put it in the database, and display a success message. If it fails an
-			error message appears.
-
-2014-4-23 Cameron Keif
-  * PROJECT Add account creation, login, and authentication
-
-    - If you are not logged in, the top of the page (below the sweet gradient
-    header) will have a link to log in and a link to create an account. All of
-    the functionality for this stuff can be found in root.py, specifically the 
-    login, login_receive, authenticate, logout, create_account, and
-    create_account_receive functions.
-
-    - create_account basically just checks if a user with the desired username
-    exists, and if not inserts username, password into the user table
-
-    - login queries the user table (authenticate function), and checks if the 
-    passwords match. so, it sets a cookie
-
-    - logout just expires the cookie
-
-    - the base HTML page now takes in username as an argument, and tells you
-    who you're logged in as. If you're not logged in, it will show the login
-    and create links
-	
-	* PROJECT Add username login via cookies and tracking of image by "owner".
-		Allow the owner to delete it
-
-		- You now have to be logged in to upload an image. If you're not, the
-		upload links will not appear and you will be redirected if you try
-		to navigate to the page.
-
-		- If you visit an image's page and are logged in as the owner of that
-		image, a button will appear above its score to allow deletion. Click it,
-		a dialog will appear, and if the deletion is confirmed the image will be
-		deleted.
-
-		Thanks for a good semester, Titus! :)
+4-10-2014 Jason Bull
+	* Everything works for the most part...need to figure out why chat app is not completely working.  
+	  Messages not showing on other user's screen
