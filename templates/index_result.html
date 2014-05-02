@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+
+Index
+
+{% endblock %}
+
+{% block content %}
+
+<p><u>Form Submission via GET</u></p>
+<form action='/submit' method='GET'>
+<p>first name: <input type='text' name='firstname'></p>
+<p>last name: <input type='text' name='lastname'></p>
+<p><input type='submit' value='Submit' name='submit'>
+</form></p>
+<p><u>Form Submission via POST (multipart/form-data)</u></p>
+<form action='/submit' method='POST' enctype='multipart/form-data'>
+<p>first name: <input type='text' name='firstnamePOST1'></p>
+<p>last name: <input type='text' name='lastnamePOST1'></p>
+<p><input type='submit' value='Submit' name='submitPOST1'>
+</form></p>
+<p><u>Form Submission via POST</u></p>
+<form action='/submit' method='POST'>
+<p>first name: <input type='text' name='firstnamePOST2'></p>
+<p>last name: <input type='text' name='lastnamePOST2'></p>
+<p><input type='submit' value='Submit' name='submitPOST2'> 
+</form></p>
+
+{% endblock %}

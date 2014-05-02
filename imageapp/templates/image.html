@@ -1,56 +1,93 @@
 {% extends "base.html" %}
-{% block head %}
-<style type="text/css">
-   #commentList {
-     height: 250px;
-     width: 600px;   
-     border: 1px solid;
-     padding: 5px;
-     overflow: auto;
-   }
-</style>
-<script type='text/javascript'>
-$(document).ready(function() {
-        timestamp = {{time}};
-
-	$("#submit").click(function(e) {
-            e.preventDefault();
-            $.getJSON("add_comment",
-             { user: $("#user").val(), comment: $("#comment").val(),
-	i:{{index}}, time: timestamp },
-             function(data) {
-               timestamp = data.time;
-               $.each( data.result, function( i, item ) {
-                  var myStr = "<font color='blue'>" + item.user +
-	 "</font>" + " : " + item.comment +
-         "<font color='gray'> " + item.timeHumanReadable + "</font><br>";
-                  $("#commentList").append(myStr);
-               });
-            });
-	});
-});
-</script>
-{% endblock %}
 
 {% block content %}
+
 Here is your image:
 <p>
-<img width=40% src='image_raw?i={{index}}'/> <br>
-Image Name: {{file_name}} <br>
-Description: {{description}} <br> <br>
-Comments: <br>
-<p id="commentList">
-{%- for c in commentList -%}
-<font color="blue">{{c["user"]}} </font>: {{c["comment"]}}
-<font color="gray"> {{c["timeHumanReadable"]}} </font> <br>
-{%-endfor-%}
-</p>
-<br>
-<form enctype="multipart/form-data">
-  Your name: <input type="text" name="user" id="user"><br>
-  Comment:<br>
-  <textarea rows="4" cols="70" type="text" name="comment" id="comment">
-  </textarea><br>
-  <input type="submit" name="submit" value="Add comment" id="submit"><br></br>
-  </form>
+<div id="imageContainer"></div>
+<p>
+Score: <span id="score"></span>
+<p>
+<button id='upvote_button'>Upvote</button>
+<p>
+<button id='downvote_button'>Downvote</button>
+<p>
+<h2>Comments</h2>
+<ul id="comments">
+</ul>
+<input type="text" id='add_comment' />
+<button id="add_comment_button">Add Comment</button>
+<script type="text/javascript">
+var imageNum = window.location.href.split("?num=")[1]
+
+imageHtml = ''
+
+if($.isNumeric(imageNum)) {
+    imageHtml = "<img width=40% src='image_raw?num=" + imageNum + "' />"
+    console.log(imageHtml)
+} else {
+    // Just show the latest if they're a jerk and used a non numeric value
+    imageHtml = "<img width=40% src='image_raw?special=latest'/>"
+}
+
+$("#imageContainer").append(imageHtml)
+
+$.post("get_score?num=" + imageNum,
+    function(score) {
+        score = parseInt(score);
+        if (isNaN(score)){
+            $("#score").append(0)
+        }
+        else {
+            $("#score").append(score)
+        }
+        
+    });
+
+$.post("get_comments?num=" + imageNum,
+    function(xml) { 
+        console.log(imageNum)
+        console.log(xml)
+        $("comment", xml).each( function(id) {
+            comment = $("comment", xml).get(id)
+            $(comments).append("<li>" + ($("text", comment).text()) + "</li>")
+        });
+    });
+
+$("#add_comment_button").click(function() {
+    $.post("add_comment",
+        {
+            num        :   imageNum,
+            comment    :   $("#add_comment").val(),
+        })
+    .success(function(){
+        $("#comments").prepend("<li>" + $("#add_comment").val() + "</li>")
+        $("#add_comment").val('')
+    })
+});
+
+$("#upvote_button").click(function() {
+    console.log(imageNum);
+    $.post("increment_score?num=" + imageNum,
+        function() {
+        var score = $("#score").text()
+        score = parseInt(score)
+        score += 1
+        $("#score").empty()
+        $("#score").append(score)
+    });
+});
+
+$("#downvote_button").click(function() {
+    console.log(imageNum);
+    $.post("decrement_score?num=" + imageNum,
+        function() {
+        var score = $("#score").text()
+        score = parseInt(score)
+        score -= 1
+        $("#score").empty()
+        $("#score").append(score)
+    });
+});
+</script>
 {% endblock %}

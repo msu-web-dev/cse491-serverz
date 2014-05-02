@@ -1,76 +1,144 @@
-# CSE 491
+# from http://docs.python.org/2/library/wsgiref.html
 
-import cgi # for fieldStorage - parsing data
-import jinja2 # for template
-from werkzeug.wrappers import Response # for making wrapper class
-from mimetypes import guess_type # for mapping file extension to mimetype
+import cgi
+import urlparse
+import jinja2
+from wsgiref.util import setup_testing_defaults
+from StringIO import StringIO
 
-# jinja file path
-JinjaTemplateDir = './templates'
+def app(environ, start_response):
+    loader = jinja2.FileSystemLoader('./templates')
+    env = jinja2.Environment(loader=loader)
 
-# Other type of resources (.ico, .jpg, ...)
-ResDir = './resources'
-
-# A relatively simple WSGI application. It's going to print out the
-# environment dictionary after being updated by setup_testing_defaults
-def simple_app(environ, start_response):
-    if environ['PATH_INFO'] == '/file':
-        environ['PATH_INFO'] = '/file.txt'
-    elif environ['PATH_INFO'] == '/image':
-        environ['PATH_INFO'] = '/image.jpg'
-        
-    if '.' in environ['PATH_INFO'] and '.html' not in environ['PATH_INFO']:
-        # request for something other than html page
-        ret = handle_resources(environ)
-    else:
-        # html request
-        ret = handle_html(environ)
-
-    return ret(environ, start_response)
-
-# return a 404 response
-def error404():
-    jEnv = jinja2.Environment(loader=jinja2.FileSystemLoader(JinjaTemplateDir))
-    tmp = jEnv.get_template('notFound.html').render()
-    ret = Response(tmp, mimetype ='text/html')
-    ret.status = '404 Not Found'
-    return ret
+    # By default, set up the 404 page response. If it's
+    # a valid page, we change this. If some weird stuff
+    # happens, it'll default to 404.
+    status = '404 Not Found'
+    response_content = not_found('', env)
+    headers = [('Content-type', 'text/html')]
     
-# Handle all html page request
-def handle_html(environ):
-    jEnv = jinja2.Environment(loader=jinja2.FileSystemLoader(JinjaTemplateDir))
-
-    path = environ['PATH_INFO']
-    if path == '/':
-        path = '/index'
-    if not '.' in path:
-        path += '.html'
-
-    reqFS = cgi.FieldStorage(fp = environ['wsgi.input'],environ=environ)
-
     try:
-        tmp = jEnv.get_template(path).render(reqFS)
-        ret = Response(tmp, mimetype ='text/html')
-    except jinja2.exceptions.TemplateNotFound:
-        return error404()
+        http_method = environ['REQUEST_METHOD']
+        path = environ['PATH_INFO']
+    except:
+        pass
 
-    if path == '/badRequest.html':
-        ret.status = '400 Bad Request'
-
-    return ret
-
-# Handle resources (.txt, .jpg, .ico,...) request
-def handle_resources(environ):
-    fileDir = ResDir + environ['PATH_INFO']
-    try:
-        fp = open(fileDir, 'rb')
-    except IOError:
-        # File not found
-        return error404()
-
-    data = fp.read()
-    fp.close()
-    return Response(data, mimetype = guess_type(fileDir)[0])
+    if http_method == 'POST':
+        if path == '/':
+            # I feel like there's a better way of doing this
+            # than spamming status = '200 OK'. But it's almost 10
+            # and we have to catch up because our capstone group
+            # member just didn't do anything the past week. /rant
+            status = '200 OK'
+            response_content = handle_index(environ, env)
+        elif path == '/submit':
+            status = '200 OK'
+            response_content = handle_submit_post(environ, env)
+    elif http_method == 'GET':
+        if path == '/':
+            status = '200 OK'
+            response_content = handle_index(environ, env)
+        elif path == '/content':
+            status = '200 OK'
+            response_content = handle_content(environ, env)
+        elif path == '/file':
+            headers = [('Content-type', 'text/plain')]
+            status = '200 OK'
+            response_content = handle_file(environ, env)
+        elif path == '/image':
+            headers = [('Content-type', 'image/jpeg')]
+            status = '200 OK'
+            response_content = handle_image(environ, env)
+        elif path == '/submit':
+            status = '200 OK'
+            response_content = handle_submit_get(environ, env)
+                
+    start_response(status, headers)
+    response = []
+    response.append(response_content)
+    return response
 
 def make_app():
-    return simple_app
+    return app
+
+def handle_index(params, env):
+    return str(env.get_template("index_result.html").render())
+    
+def handle_content(params, env):
+    return str(env.get_template("content_result.html").render())
+
+def readFile(filepath):
+    ''' Reads a file and returns its contents as a string '''
+    f = open(filepath, 'rb')
+    data = f.read()
+    f.close()
+
+    return data
+
+def handle_file(params, env):
+    return readFile('./files/butts.txt')
+
+def handle_image(params, env):
+    return readFile('./images/doge.jpeg')
+
+def not_found(params, env):
+    return str(env.get_template("not_found.html").render())
+
+def handle_submit_post(environ, env):
+    ''' Handle a connection given path /submit '''
+    
+    headers = {}
+    for k in environ.keys():
+        headers[k.lower()] = environ[k]
+
+    headers['content-type'] = environ['CONTENT_TYPE']
+    headers['content-length'] = environ['CONTENT_LENGTH']    
+
+    firstNameFieldName = 'firstnamePOST2'
+    lastNameFieldName = 'lastnamePOST2'
+
+    # Kludgey workaround
+    if "multipart/form-data" in environ['CONTENT_TYPE']:
+        cLen = int(environ['CONTENT_LENGTH'])
+        data = environ['wsgi.input'].read(cLen)
+        environ['wsgi.input'] = StringIO(data)
+
+        firstNameFieldName = 'firstnamePOST1'
+        lastNameFieldName = 'lastnamePOST1'
+
+    form = cgi.FieldStorage(headers = headers, fp = environ['wsgi.input'], 
+                            environ = environ)
+
+    try:
+      firstname = form[firstNameFieldName].value
+    except KeyError:
+      firstname = ''
+
+    try:
+      lastname = form[lastNameFieldName].value
+    except KeyError:
+        lastname = ''
+
+    vars = dict(firstname = firstname, lastname = lastname)
+    return str(env.get_template("submit_result.html").render(vars))
+
+def handle_submit_get(environ, env):
+    ''' Handle a connection given path /submit '''
+    # submit needs to know about the query field, so more
+    # work needs to be done here.
+
+    # we want the first element of the returned list
+    params = environ['QUERY_STRING']
+    params = urlparse.parse_qs(params)
+
+    try:
+      firstname = params['firstname'][0]
+    except KeyError:
+      firstname = ''
+    try:
+      lastname = params['lastname'][0]
+    except KeyError:
+      lastname = ''
+
+    vars = dict(firstname = firstname, lastname = lastname)
+    return str(env.get_template("submit_result.html").render(vars))

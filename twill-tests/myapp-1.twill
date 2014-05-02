@@ -1,30 +1,38 @@
 go /
 code 200
-
-go /file
-code 200
+find "via POST"
 
 go /content
 code 200
+find "Cam is great"
 
 go /image
 code 200
 
-go /environ
+go /file
 code 200
+find "butts lol"
 
-go /form
+go /
+formvalue 1 firstname "Drum"
+formvalue 1 lastname "and Bass"
+submit submit
 code 200
+find "Hello Mrs. Drum and Bass."
 
-go /formPost
+go /
+formvalue 2 firstnamePOST1 "Spongebob"
+formvalue 2 lastnamePOST1 "Squarepants"
+submit submitPOST1
 code 200
+find "Hello Mrs. Spongebob Squarepants."
 
-go /form
-fv 1 firstname Minh
-fv 1 lastname Pham
-submit
+go /
+formvalue 3 firstname "Cam"
+formvalue 3 lastname "is so great wow"
+submit submitPOST2
+code 200
+find "Hello Mrs. Cam is so great wow."
 
-find "Minh Pham"
-
-go /fake
+go /ASDF
 code 404

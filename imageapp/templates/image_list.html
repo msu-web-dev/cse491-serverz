@@ -1,35 +1,21 @@
 {% extends "base.html" %}
-{% block head %}
-<style>
-table,th,td
-{
-border-spacing:10px;
-}
-td
-{
-width: 150px;
-height: 150px;
-table-layout: fixed;
-overflow : hidden;
-}
-</style>
-{% endblock %}
+
 {% block content %}
-Here is the list of image:
-<p>
-  {% if results is defined-%}
-  <table>
-    <tr>
-  {%- for i in results -%}
-  <td>
-<img width=70 height=70 src='image_thumbnail?i={{i["index"]}}'/> <br>
-Name: <a href=image?i={{i["index"]}}>{{i["file_name"]}}</a> </br>
-Description: {{i["description"]}} <br>
-</td>
-  {% if loop.index is divisibleby 4 %} </tr><tr> {% endif %}
-  {%-endfor-%}
-  <tr>
-</table>
-  {%-else-%} No image found
-  {%-endif-%}
+
+<h2>Here are all of the images that have been uploaded!</h2>
+(most recently uploaded first)
+<div id="imageContainer">
+</div>
+<script type="text/javascript">
+    $.post("image_count",
+         function(count) { 
+            count = parseInt(count);
+            for (var i = count; i > 0; i--) {
+                $("#imageContainer").append("<div style='padding-top:10px'>" + 
+                    "<a href='/image?num=" + i + "'>" +
+                    "<img width='200' src='image_raw?num=" + i + "' /></a></div>");
+            }
+         }
+    );
+</script>
 {% endblock %}

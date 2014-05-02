@@ -37,8 +37,8 @@ $(document).ready(function() {
 
         author = $("author", message).text();
         content = $("text", message).text();
-
-        $("#messagewindow").prepend("<b>" + author + "</b>:" + content 
+        var date = new Date(timestamp * 1000);
+        $("#messagewindow").prepend(date.toLocaleTimeString() + " <b> " + author + "</b>: " + content
                                     + "<br>");
      });
   };
@@ -89,10 +89,12 @@ $(document).ready(function() {
   <form id="chatform">
 
 Name: <input type="text" id="author" />
+<p>
 Message: <input type="text" id="message" />
-
+</p>
+<p>
    <input type="submit" value="ok" /><br />
-
+</p>
 </form>
 </div>
 

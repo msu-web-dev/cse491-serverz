@@ -1,26 +1,5 @@
 import server
-import jinja2
 
-okay_header = 'HTTP/1.0 200 OK'
-
-bad_request_header ='HTTP/1.0 400 Bad Request'
-
-# List of pages have been implemented
-PageList = ['index', 'content', 'form', 'formPost', 'environ']
-
-class AcceptCalledMultipleTimes(Exception):
-    pass
-
-class FakeSocketModule(object):
-    def getfqdn(self):
-        return "fakehost"
-
-    def gethostbyname(self, host):
-        return "0.fake.0.host"
-
-    def socket(self):
-        return FakeConnection("")
-    
 class FakeConnection(object):
     """
     A fake connection class that mimics a real TCP socket for the purpose
@@ -30,7 +9,6 @@ class FakeConnection(object):
         self.to_recv = to_recv
         self.sent = ""
         self.is_closed = False
-        self.n_times_accept_called = 0
 
     def recv(self, n):
         if n > len(self.to_recv):
@@ -47,243 +25,148 @@ class FakeConnection(object):
     def close(self):
         self.is_closed = True
 
-    def isOkay(self):
-        return okay_header in self.status()
+# Test basic GET calls.
 
-    def isBad(self):
-        return bad_request_header in self.status()
-
-    def status(self):
-        return self.sent.split('\r\n')[0]
-    
-    def headers(self):
-        return self.sent.split('\r\n\r\n')[0]
-
-    def bind(self, param):
-        (host, port) = param
-    
-    def listen(self, n):
-        if n != 5:
-            raise Exception("n should be five you dumby")
-
-    def accept(self):
-        if self.n_times_accept_called > 1:
-            raise AcceptCalledMultipleTimes("stop calling accept, please")
-        self.n_times_accept_called += 1
-        
-        c = FakeConnection("")
-        return c, ("noclient", 32351)
-
-# Test main for increased coverage
-def test_main():
-    fakemodule = FakeSocketModule()
-
-    success = False
-    try:
-        server.main(fakemodule)
-    except AcceptCalledMultipleTimes:
-        success = True
-
-    assert success, "something went wrong"
-    
-# Test a basic GET call.
+# Test path = /
 def test_handle_connection():
     conn = FakeConnection("GET / HTTP/1.0\r\n\r\n")
-    server.handle_connection(conn)
 
-    assert conn.isOkay(), 'Got: %s' % (repr(conn.sent),)
-    assert 'Hello' in conn.sent, 'Wrong page: %s' % (repr(conn.sent),)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
 
-def test_all_normal_page():
-    for page in PageList:
-        reqString = "GET /" + page + " HTTP/1.0\r\n\r\n"
-        conn = FakeConnection(reqString)
-        server.handle_connection(conn)
+    assert 'HTTP/1.0 200' in conn.sent and 'form' in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
 
-        assert conn.isOkay(), 'Not Okay: %s' % (repr(conn.sent),)
-        assert page.capitalize() in conn.sent,\
-           'Wrong page %s: %s' % (page,repr(conn.sent),)
+# Test path = /content
+def test_handle_connection_content():
+    conn = FakeConnection("GET /content HTTP/1.0\r\n\r\n")
 
-def test_get_submit():
-    conn = FakeConnection("GET /submit?firstname=Minh&lastname=Pham&submit=Submit+Query HTTP/1.0\r\n\r\n")
-    server.handle_connection(conn)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+
+    assert 'HTTP/1.0 200' in conn.sent and 'content' in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
+
+# Test path = /file
+def test_handle_connection_file():
+    conn = FakeConnection("GET /file HTTP/1.0\r\n\r\n")
+
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+
+    assert 'HTTP/1.0 200' in conn.sent and 'text/plain' in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
+
+# Test path = /content
+def test_handle_connection_image():
+    conn = FakeConnection("GET /image HTTP/1.0\r\n\r\n")
+
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
     
-    assert conn.isOkay(), 'Got: %s' % (repr(conn.sent),)
-    assert 'Minh Pham' in conn.sent, 'Wrong page: %s' % (repr(conn.sent),)
+    assert 'HTTP/1.0 200' in conn.sent and 'image/jpeg' in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
 
-def test_get_submit_empty():
-    conn = FakeConnection("GET /submit HTTP/1.0\r\n\r\n")
-    server.handle_connection(conn)
+# Test path = /submit
+def test_handle_submit():
+    conn = FakeConnection("GET /submit?firstname=Taylor&lastname=Swift" + \
+                          " HTTP/1.1\r\n\r\n")
+
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+
+    assert 'html' in conn.sent and "Taylor" in conn.sent \
+      and 'Swift' in conn.sent, 'Got: %s' % (repr(conn.sent),)
+
+# Test a submit with no first name
+def test_handle_submit_no_first_name():
+    conn = FakeConnection("GET /submit?firstname=&lastname=Swift" + \
+                          " HTTP/1.1\r\n\r\n")
+
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+
+    assert 'html' in conn.sent and "Swift" in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
+
+# Tests a submit with no last name
+def test_handle_submit_no_last_name():
+    conn = FakeConnection("GET /submit?firstname=Taylor&lastname=" + \
+                          " HTTP/1.1\r\n\r\n")
+
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+
+    assert 'html' in conn.sent and "Taylor" in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
+
+# test 404
+def test_handle_not_found():
+    conn = FakeConnection("GET /poop HTTP/1.0\r\n\r\n")
+
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+
+    assert 'HTTP/1.0 404' in conn.sent and 'want' in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
+
+# Test POST connections
+
+# Test / requests
+def test_handle_connection_post():
+    conn = FakeConnection("POST / HTTP/1.0\r\n" + \
+      "Content-length: 0\r\n\r\n")
+
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+
+    assert 'HTTP/1.0 200' in conn.sent and 'form' in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
+
+# Test /submit requests (both types)
+def test_handle_submit_post():
+    conn = FakeConnection("POST /submit HTTP/1.1\r\n" + \
+                          "Content-Length: 31\r\n\r\n" + \
+                          "firstname=Taylor&lastname=Swift")
+
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
     
-    assert conn.isOkay(), 'Got: %s' % (repr(conn.sent),)
-    assert 'No Name' in conn.sent, 'Wrong page: %s' % (repr(conn.sent),)
-
-def test_404_post():
-    conn = FakeConnection("POST /fake HTTP/1.0\r\n\r\n")
-    server.handle_connection(conn)
-
-    assert conn.status() == 'HTTP/1.0 404 Not Found',\
-        'Got: %s' % (repr(conn.sent),)
-
-def test_404_options():
-    conn = FakeConnection("OPTIONS /fake HTTP/1.0\r\n\r\n")
-    server.handle_connection(conn)
-
-    assert conn.status() == 'HTTP/1.0 404 Not Found',\
-        'Got: %s' % (repr(conn.sent),)
-
-def test_404_get():
-    conn = FakeConnection("GET /fake HTTP/1.0\r\n\r\n")
-    server.handle_connection(conn)
-
-    assert conn.status() == 'HTTP/1.0 404 Not Found',\
-        'Got: %s' % (repr(conn.sent),)
-
-def test_post_submit_multi():
-    reqString = 'POST /submit HTTP/1.1\r\n' +\
-	'Host: arctic.cse.msu.edu:9853\r\n' +\
-	'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:17.0) Gecko/20131030 Firefox/17.0 Iceweasel/17.0.10\r\n' +\
-	'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n' +\
-	'Accept-Language: en-US,en;q=0.5\r\n' +\
-	'Accept-Encoding: gzip, deflate\r\n' +\
-	'Connection: keep-alive\r\n' +\
-	'Referer: http://arctic.cse.msu.edu:9853/formPost\r\n'+\
-	'Content-Type: multipart/form-data; boundary=---------------------------10925359777073771901781915428\r\n' +\
-	'Content-Length: 418\r\n' +\
-	'\r\n' +\
-	'-----------------------------10925359777073771901781915428\r\n' +\
-	'Content-Disposition: form-data; name="firstname"\r\n' +\
-	'\r\n' +\
-	'Minh\r\n' +\
-	'-----------------------------10925359777073771901781915428\r\n' +\
-	'Content-Disposition: form-data; name="lastname"\r\n' +\
-	'\r\n' +\
-	'Pham\r\n' +\
-	'-----------------------------10925359777073771901781915428\r\n' +\
-	'Content-Disposition: form-data; name="submit"\r\n' +\
-	'\r\n' +\
-	'Submit Query\r\n' +\
-	'-----------------------------10925359777073771901781915428\r\n'
-    conn = FakeConnection(reqString)
-    server.handle_connection(conn)
-
-    assert conn.isOkay(), 'Got: %s' % (repr(conn.sent),)
-    assert 'Minh Pham' in conn.sent, 'Wrong page: %s' % (repr(conn.sent),)
-
-def test_post_submit_app():
-    reqString = 'POST /submit HTTP/1.1\r\n' +\
-	'Host: arctic.cse.msu.edu:9176\r\n' +\
-	'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:17.0) Gecko/20131030 Firefox/17.0 Iceweasel/17.0.10\r\n' +\
-	'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n' +\
-	'Accept-Language: en-US,en;q=0.5\r\n' +\
-	'Accept-Encoding: gzip, deflate\r\n' +\
-	'Connection: keep-alive\r\n' +\
-	'Referer: http://arctic.cse.msu.edu:9176/formPost\r\n' +\
-	'Content-Type: application/x-www-form-urlencoded\r\n' +\
-	'Content-Length: 48\r\n' +\
-	'\r\n' +\
-	'firstname=Minh&lastname=Pham&submit=Submit+Query\r\n'
-
-    conn = FakeConnection(reqString)
-    server.handle_connection(conn)
-
-    assert conn.isOkay(), 'Got: %s' % (repr(conn.sent),)
-    assert 'Minh Pham' in conn.sent, 'Wrong page: %s' % (repr(conn.sent),)
-
-def test_post_submit_empty():
-    conn = FakeConnection("POST /submit HTTP/1.0\r\n\r\n")
-    server.handle_connection(conn)
-
-    assert conn.isOkay(), 'Got: %s' % (repr(conn.sent),)
-    assert 'No Name' in conn.sent, 'Wrong page: %s' % (repr(conn.sent),)
-
-def test_favicon():
-    conn = FakeConnection("GET /favicon.ico HTTP/1.0\r\n\r\n")
-    server.handle_connection(conn)
-
-    assert conn.isOkay(), 'Not Okay: %s' % (repr(conn.headers()),)
-
-def test_fake_file():
-    conn = FakeConnection("GET /fake.file HTTP/1.0\r\n\r\n")
-    server.handle_connection(conn)
-
-    assert conn.status() == 'HTTP/1.0 404 Not Found',\
-        'Got: %s' % (repr(conn.sent),)
+    assert 'HTTP/1.0 200' in conn.sent and "Hello Mrs." in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
     
-def test_evil_empty():
-    conn = FakeConnection("")
-    server.handle_connection(conn)
+def test_handle_submit_post_multipart_and_form_data():
+    conn = FakeConnection("POST /submit " + \
+          "HTTP/1.1\r\nContent-length: 246\r\n\r\n------" + \
+          "WebKitFormBoundaryAaal27xQakxMcNYm\r\n" + \
+          'Content-Disposition: form-data; name="firstname"\r\n\r\nTaylor' + \
+          '\r\n------WebKitFormBoundaryAaal27xQakxMcNYm\r\n' + \
+          'Content-Disposition: form-data; name="lastname"\r\n\r\nSwift' + \
+          '\r\n------WebKitFormBoundaryAaal27xQakxMcNYm--")')
 
-    assert conn.isBad(), 'Got: %s' % (repr(conn.sent),)
-    assert 'Plain evil' in conn.sent, 'Wrong page: %s' % (repr(conn.sent),)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+    
+    assert 'HTTP/1.0 200' in conn.sent and "Hello Mrs." in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
 
-def test_evil_get():
-    conn = FakeConnection("GET")
-    server.handle_connection(conn)
+# test 404
+def test_handle_not_found_post():
+    conn = FakeConnection("POST /butts HTTP/1.1\r\n" + \
+                          "Content-Length: 31\r\n\r\n" + \
+                          "firstname=Taylor&lastname=Swift")
 
-    assert conn.isBad(), 'Got: %s' % (repr(conn.sent),)
-    assert 'Plain evil' in conn.sent, 'Wrong page: %s' % (repr(conn.sent),)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
 
-# evil content-length:48 (no space)
-def test_evil_header():
-    reqString = 'POST /submit HTTP/1.1\r\n' +\
-	'Content-Type: application/x-www-form-urlencoded\r\n' +\
-	'Content-Length:48\r\n' +\
-	'\r\n' +\
-	'firstname=Minh&lastname=Pham&submit=Submit+Query\r\n'
+    assert 'HTTP/1.0 404' in conn.sent and 'want' in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
 
-    conn = FakeConnection(reqString)
-    server.handle_connection(conn)
+# Handle large request
+def test_handle_long_request():
+    firstname = lastname = "asdfasdfasdfasdfasdf" * 100
+    conn = FakeConnection("POST /submit HTTP/1.1\r\n" + \
+                          "Content-Length: 4020\r\n\r\n" + \
+                          "firstname=%s&lastname=%s" % (firstname, lastname))
 
-    assert conn.isBad(), 'Got: %s' % (repr(conn.sent),)
-    assert 'wrong headers' in conn.sent, 'Wrong page: %s' % (repr(conn.sent),)
+    server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
+    
+    assert 'HTTP/1.0 200' in conn.sent and "Hello Mrs." in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)
 
-# test a large file to see if it reject
-def test_evil_large_file():
-    reqString = 'POST /submit HTTP/1.1\r\n' +\
-	'Host: arctic.cse.msu.edu:9853\r\n' +\
-	'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:17.0) Gecko/20131030 Firefox/17.0 Iceweasel/17.0.10\r\n' +\
-	'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n' +\
-	'Accept-Language: en-US,en;q=0.5\r\n' +\
-	'Accept-Encoding: gzip, deflate\r\n' +\
-	'Connection: keep-alive\r\n' +\
-	'Referer: http://arctic.cse.msu.edu:9853/formPost\r\n'+\
-	'Content-Type: multipart/form-data; boundary=---------------------------10925359777073771901781915428\r\n' +\
-	'Content-Length: 100000001\r\n' +\
-	'\r\n' +\
-	'Submit Query\r\n' +\
-	'-----------------------------10925359777073771901781915428\r\n'
-    conn = FakeConnection(reqString)
-    server.handle_connection(conn)
+# Test an empty request
+def test_handle_empty_request():
+  conn = FakeConnection("\r\n\r\n")
 
-    assert conn.isBad(), 'Got: %s' % (repr(conn.headers()),)
-    assert 'too big' in conn.sent, 'Wrong page: %s' % (repr(conn.sent),)
+  server.handle_connection(conn, "arctic.cse.msu.edu", "9943")
 
-# test connection time out
-def test_conn_timeout():
-    reqString = 'POST /submit HTTP/1.1\r\n' +\
-	'Host: arctic.cse.msu.edu:9853\r\n' +\
-	'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:17.0) Gecko/20131030 Firefox/17.0 Iceweasel/17.0.10\r\n' +\
-	'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n' +\
-	'Accept-Language: en-US,en;q=0.5\r\n' +\
-	'Accept-Encoding: gzip, deflate\r\n' +\
-	'Connection: keep-alive\r\n' +\
-	'Referer: http://arctic.cse.msu.edu:9853/formPost\r\n'+\
-	'Content-Type: multipart/form-data; boundary=---------------------------10925359777073771901781915428\r\n' +\
-	'Content-Length: 891\r\n' +\
-	'\r\n' +\
-	'Submit Query\r\n' +\
-	'-----------------------------10925359777073771901781915428\r\n'
-    conn = FakeConnection(reqString)
-    server.handle_connection(conn)
-
-    assert conn.isBad(), 'Got: %s' % (repr(conn.headers()),)
-    assert 'Timeout' in conn.sent, 'Wrong page: %s' % (repr(conn.sent),)
-
-# test a large jpg file to see if it slows down
-def test_large_jpg():
-    reqString = 'GET /large.jpg HTTP/1.0\r\n\r\n'
-    conn = FakeConnection(reqString)
-    server.handle_connection(conn)
-
-    assert conn.isOkay(), 'Got: %s' % (repr(conn.headers()),)
+  assert 'HTTP/1.0 404' in conn.sent and 'want' in conn.sent, \
+    'Got: %s' % (repr(conn.sent),)

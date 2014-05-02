@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-Upload an image (jpg, png, or tif)
+Upload an image (jpg, png, or tif) (other version):
 
-<form enctype='multipart/form-data' action='upload_receive' method='POST'>
+<form enctype='multipart/form-data' action='upload2_receive' method='POST'>
 Filename: <input type='file' name='file'><p>
 <input type='submit'>
 </form>
+
 {% endblock %}
