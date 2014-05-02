@@ -13,9 +13,9 @@ class Image:
 
 images = {}
 
-def add_image(filename, data):
+def add_image(filename, username, data):
     # insert to database
-    insert_image(filename, data)
+    insert_image(filename, username, data)
 
 def get_image(num):
     return retrieve_image(num)
@@ -23,7 +23,7 @@ def get_image(num):
 def get_latest_image():
     return retrieve_image(-1)
 
-def insert_image(filename, data):
+def insert_image(filename, username, data):
     # connect to the already existing database
     db = sqlite3.connect('images.sqlite')
 
@@ -31,10 +31,10 @@ def insert_image(filename, data):
     db.text_factory = bytes
 
     # grab whatever it is you want to put in the database
-
+    print username
     # insert!
-    db.execute('INSERT INTO image_store (filename, score, image) \
-        VALUES (?,?,?)', (filename, 1, data))
+    db.execute('INSERT INTO image_store (filename, owner, score, image) \
+        VALUES (?,?,?,?)', (filename, username, 1, data))
     db.commit()
 
 # retrieve an image from the database.
@@ -98,6 +98,21 @@ def get_comments(i):
 
     return comments
 
+def get_owner(i):
+    # connect to database
+    db = sqlite3.connect('images.sqlite')
+
+    # get a query handle (or "cursor")
+    c = db.cursor()
+
+    # select all of the images
+    if i >= 0:
+        c.execute('SELECT owner FROM image_store where i=(?)', (i,))
+    else:
+        c.execute('SELECT owner FROM image_store ORDER BY i DESC LIMIT 1')
+
+    return c.fetchone()[0]
+
 def get_image_score(i):
     # connect to database
     db = sqlite3.connect('images.sqlite')
@@ -112,7 +127,6 @@ def get_image_score(i):
         c.execute('SELECT score FROM image_store ORDER BY i DESC LIMIT 1')
 
     val = int(c.fetchone()[0])
-    print val
     return val
 
 def increment_image_score(i):
@@ -135,11 +149,20 @@ def decrement_image_score(i):
     db.execute('UPDATE image_store SET score = score - 1 where i=(?)', (i,))
     db.commit()
 
-def get_num_images():
+def get_image_numbers():
     db = sqlite3.connect('images.sqlite')
     c = db.cursor()
-    c.execute('SELECT i FROM image_store ORDER BY i DESC LIMIT 1')
-    try:
-        return int(c.fetchone()[0])
-    except:
-        return 0
+    c.execute('SELECT i FROM image_store ORDER BY i')
+    nums = []
+
+    for num in c.fetchall():
+        nums.append(num[0])
+
+    print nums
+    return nums
+
+def delete_image(i):
+    db = sqlite3.connect('images.sqlite')
+    print(i)
+    db.execute('DELETE FROM image_store WHERE i=(?)', (i,))
+    db.commit()
