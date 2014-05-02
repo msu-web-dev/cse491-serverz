@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="contentTitle">
+<h1>Create Account</h1>
+</div>
+
+<div class="contentText">
+<form id='create' method='post'>
+Username: <input required type='text' id='username' name='username' maxlength='30'><p>
+Password: <input required id='pwd' type='password' name='password' maxlength='30'><p>
+Confirm Password: <input required id='confirm_pwd' type='password' name='confirm_pwd' maxlength='30'><p>
+<input type='submit' value='Submit'>
+</form>
+
+<span id="password_match_failure">Passwords do not match.</span>
+</div>
+
+<script type='text/javascript'>
+$( document ).ready(function() {
+	$('#password_match_failure').hide()
+});
+
+$('#create').on('submit', function () {
+	$('#password_match_failure').hide()
+    if ($('#pwd').val() == $('#confirm_pwd').val())
+    {
+    	$.post("create_account_receive",
+        $("#create").serialize()).success(function(){
+            window.location = "./";
+        })
+    } else
+    {
+		$('#password_match_failure').show()
+    }
+    return false;
+});
+</script>
+{% endblock %}

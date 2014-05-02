@@ -30,9 +30,12 @@ def create_database():
     print 'creating database'
     db = sqlite3.connect('images.sqlite')
     db.execute('CREATE TABLE image_store (i INTEGER PRIMARY KEY, filename VARCHAR(255), \
-        score INTEGER, image BLOB)');
+        owner VARCHAR(30), score INTEGER, image BLOB, \
+        FOREIGN KEY (owner) REFERENCES user(username))');
     db.execute('CREATE TABLE image_comments (i INTEGER PRIMARY KEY, imageId INTEGER, \
      comment TEXT, FOREIGN KEY (imageId) REFERENCES image_store(i))');
+    db.execute('CREATE TABLE user (username VARCHAR(30) PRIMARY KEY, \
+        password VARCHAR(30))');
     db.commit()
     db.close()
 
