@@ -1,167 +1,175 @@
 #!/usr/bin/env python
-# Minh Pham
-# CSE 491
+import random
+import socket
+import time
+import urlparse
+import os
+import sys
+import argparse
+import imageapp
+import quixote
+import quixote.demo.altdemo
+import app
+import quotes
+import chat
+import cookieapp
 
-import random, socket, time
-from urlparse import urlparse  # credit to Jason Lefler code
-import signal # to control execution time
-import StringIO # for string buffer
-from app import make_app # for making an app
-from wsgiref.validate import validator # validating server side
-import argparse # for command line argument
-import envTemplates # for some default environment
-from appChooser import choose_app, AppChoices # choosing app
+from StringIO import StringIO
 
-# Constant
-# buffer size for conn.recv
-BuffSize = 128
+def main():
+    # Set up the argument parser
+    parser = argparse.ArgumentParser(description='Server for several WSGI apps')
+    parser.add_argument('-p', metavar='-p', type=int, nargs='?', default=-1,
+                   help='an integer for the port number')
 
-# timeout for conn.recv (in seconds)
-ConnTimeout = 3
+    parser.add_argument('-A', metavar='-A', type=str, nargs=1,
+                   help='the app to run (image, altdemo, or myapp)')
 
-# Max File size to be receive from the server (in byte)
-MaxFileSize = 1e8
+    args = parser.parse_args()
+    try:
+      appname = args.A[0]
+    except TypeError:
+      appname = "HOLYSHITINVALIDAPPWTF"
 
-def main(socketModule = None):
-    # for testing main
-    if socketModule == None:
-        socketModule = socket
-        # choose app based on system argument
-        args = parse_sys_arg()
-        myApp = choose_app(args.app)
-        # choose port number
-        port = args.port
-    else:
-        myApp = choose_app('default')
-        port = 0
+    validApps = ['myapp', 'image', 'altdemo', 'quotes', 'chat', 'cookie']
+    if appname not in validApps:
+      raise Exception("Invalid application name. Please enter -A followed by 'myapp', " + 
+        "'image', 'altdemo', 'quotes', 'cookie', or 'chat'")
+    s = socket.socket()         # Create a socket object
+    host = socket.getfqdn()     # Get local machine name
+    port = args.p
 
-    s = socketModule.socket()         # Create a socket object
-    host = socketModule.getfqdn() # Get local machine name
-    
-    ipAddress = socketModule.gethostbyname(host)
+    if port < 8000 or port > 9999:
+      port = random.randint(8000,9999)
+
+
     s.bind((host, port))        # Bind to the port
-    
-    print 'Starting server on', ipAddress, port
+
+    print 'Starting server on', host, port
     print 'The Web server URL for this would be http://%s:%d/' % (host, port)
 
     s.listen(5)                 # Now wait for client connection.
 
     print 'Entering infinite loop; hit CTRL-C to exit'
+    while True:
+        # Establish connection with client.    
+        c, (client_host, client_port) = s.accept()
+        print 'Got connection from', client_host, client_port, '\n'
+        handle_connection(c, host, port, appname)
 
-    try:
-        while True:
-            # Establish connection with client.    
-            conn, (client_host, client_port) = s.accept()
-            print 'Got connection from', client_host, client_port
-            handle_connection(conn, host, port, myApp)
-    except KeyboardInterrupt:
-        print "\nExiting server...\n"
+def handle_connection(conn, host, port, appname):
+  environ = {}
+  request = conn.recv(1)
+  
+  # This will get all the headers
+  while request[-4:] != '\r\n\r\n':
+    new = conn.recv(1)
+    if new == '':
+        return
+    else:
+        request += new
 
-# raise error when time out
-def signal_handler(signum, frame):
-    raise Exception("Timed out!")
+  request, data = request.split('\r\n',1)
+  headers = {}
+  for line in data.split('\r\n')[:-2]:
+      key, val = line.split(': ', 1)
+      headers[key.lower()] = val
 
-def handle_connection(conn, host='fake', port=0, anApp=make_app()):
-    # start_response function used in make_app
-    # credit to Ben Taylor and Josh Shadik
-    def start_response(status, resHeaders, exc_info=None):
-        conn.send('HTTP/1.0 %s\r\n' % (status))
-        for header in resHeaders:
-            conn.send('%s: %s\r\n' % header)
+  first_line_of_request_split = request.split('\r\n')[0].split(' ')
+
+  # Path is the second element in the first line of the request
+  # separated by whitespace. (Between GET and HTTP/1.1). GET/POST is first.
+  http_method = first_line_of_request_split[0]
+  environ['REQUEST_METHOD'] = first_line_of_request_split[0]
+
+  try:
+    parsed_url = urlparse.urlparse(first_line_of_request_split[1])
+    environ['PATH_INFO'] = parsed_url[2]
+    env['QUERY_STRING'] = parsed_url[4]
+  except:
+    pass
+
+  urlInfo = urlparse.urlparse(request.split(' ', 3)[1])
+  environ['REQUEST_METHOD'] = 'GET'
+  environ['PATH_INFO'] = urlInfo[2]
+  environ['QUERY_STRING'] = urlInfo[4]
+  environ['CONTENT_TYPE'] = 'text/html'
+  environ['CONTENT_LENGTH'] = str(0)
+  environ['SCRIPT_NAME'] = ''
+  environ['SERVER_NAME'] = socket.getfqdn()
+  environ['SERVER_PORT'] = str(port)
+  environ['wsgi.version'] = (1, 0)
+  environ['wsgi.errors'] = sys.stderr
+  environ['wsgi.multithread']  = False
+  environ['wsgi.multiprocess'] = False
+  environ['wsgi.run_once']     = False
+  environ['wsgi.url_scheme'] = 'http'
+  environ['HTTP_COOKIE'] = headers['cookie'] if 'cookie' in headers.keys() else ''
+
+  def start_response(status, response_headers):
+        conn.send('HTTP/1.0 ')
+        conn.send(status)
+        conn.send('\r\n')
+        for pair in response_headers:
+            key, header = pair
+            conn.send(key + ': ' + header + '\r\n')
         conn.send('\r\n')
 
-    # Create a default environ to avoid code breaking
-    defaultEnv = envTemplates.DefaultEnv(host, port)
-            
-    reqEnv = getData(conn, defaultEnv)
-    #myApp = validator(anApp)
-    myApp = anApp
-    resPage = myApp(reqEnv, start_response) # normal server
-    
-    for svrRes in resPage:
-        conn.send(svrRes)
+  content = ''
+  if request.startswith('POST '):
+      environ['REQUEST_METHOD'] = 'POST'
+      environ['CONTENT_LENGTH'] = str(headers['content-length'])
+      try:
+        environ['CONTENT_TYPE'] = headers['content-type']
+      except:
+        pass
 
-    #resPage.close()
-    conn.close()
-
-# handle getting data from connection with arbitrary size
-# return an environment dictionary
-def getData(conn, defaultEnv):
-    # signal is used to control execution time
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(ConnTimeout) # set timeout
-    
-    env = envTemplates.Error404Env
+      cLen = int(headers['content-length'])
+      while len(content) < cLen:
+          content += conn.recv(1)
+      
+  environ['wsgi.input'] = StringIO(content)
+  
+  # Create the appropriate wsgi app based on the command-line parameter
+  if appname == "image":
     try:
-        env = createEnv(conn, defaultEnv)
-    except Exception, msg:
-        print "Connection Timeout:", msg
-        env = envTemplates.Error400Env("Timeout")
+      # Sometimes this gets called multiple times. Blergh.
+      p = imageapp.create_publisher()
+      imageapp.setup()
+    except RuntimeError:
+      pass
+  
+    wsgi_app = quixote.get_wsgi_app()
 
-    signal.alarm(0) # turn off signal
-
-    return env
-
-# create environment dictionary from connection and a default environment
-def createEnv(conn, defaultEnv):
-    # Credit to Ben Taylor for parsing request
-    # Start reading in data from the connection
-    reqRaw = conn.recv(1)
-    while reqRaw[-4:] != '\r\n\r\n':
-        new = conn.recv(1)
-        if new == '':
-            return envTemplates.Error400Env("Plain evil")
-        else:
-            reqRaw += new
-    
-    # some default value to avoid code breaking
-    env = defaultEnv.copy()
-    
-    req, data = reqRaw.split('\r\n',1)
-    env['REQUEST_METHOD'] = req.split(' ',1)[0]
-    
+  elif appname == "myapp":
+    wsgi_app = app.make_app()
+  elif appname == "altdemo":
     try:
-        uri = req.split()[1]
-    except IndexError:
-        return envTemplates.Error400Env("No path in request") # evil
-    
-    env['PATH_INFO'] = uri.split('?',1)[0]
-    if "?" in uri:
-        env['QUERY_STRING'] = uri.split('?',1)[1]
+      p = quixote.demo.altdemo.create_publisher()
+    except RuntimeError:
+      pass
 
-    # putting headers data to environment dict
-    for line in data.split('\r\n')[:-2]:
-        if ': ' in line:
-            key, value = line.strip('\r\n').split(": ",1)
-            key = key.upper().replace('-','_')
-            env[key] = value
-        else:
-            return envTemplates.Error400Env("wrong headers") # evil
+    wsgi_app = quixote.get_wsgi_app()
+  elif appname == "quotes":
+    # The quotes files are in the 'quotes' subdirectory
+    directory_path = './quotes/'
+    wsgi_app = quotes.create_quotes_app(directory_path + 'quotes.txt', directory_path + 'html')
 
-    if 'COOKIE' in env.keys():
-        env['HTTP_COOKIE'] = env['COOKIE']
+  elif appname == "chat":
+    # The chat files are in the 'quotes' subdirectory
+    wsgi_app = chat.create_chat_app('./chat/html')
 
-    content = ''
-    cLen = int(env['CONTENT_LENGTH'])
-    if cLen > MaxFileSize:
-        return envTemplates.Error400Env("Request size too big")
-    if cLen > 0:
-        while len(content) < cLen:
-            content += conn.recv(BuffSize)
-    #print "%s%s" % (repr(reqRaw), repr(content),) # for printing request
-    env['wsgi.input'] = StringIO.StringIO(content)
-    return env
+  elif appname == "cookie":
+    wsgi_app = cookieapp.wsgi_app
 
-# Parse the command line arguments
-# return the argument
-def parse_sys_arg():
-    parser = argparse.ArgumentParser(description='Run a WSGI server.')
-    parser.add_argument('-a', '-A', '--app', default = 'default',\
-                        metavar = 'App', choices = AppChoices,\
-                        help='The WSGI app to run')
-    parser.add_argument('-p', '--port', default=random.randint(8000,8009),\
-                        type=int, metavar='Port',help='Port number to run')
-    return parser.parse_args()
+  result = wsgi_app(environ, start_response)
+  try:
+    for response in result:
+      conn.send(response)
+  finally:
+    if hasattr(result, 'close'):
+      result.close()
+  conn.close()
 
 if __name__ == '__main__':
-    main()
+   main()

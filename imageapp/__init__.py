@@ -1,11 +1,14 @@
 # __init__.py is the top level file in a Python package.
+import os
+import sqlite3
 
 from quixote.publish import Publisher
 
 # this imports the class RootDirectory from the file 'root.py'
 from .root import RootDirectory
 from . import html, image
-from sqlite import query
+
+IMAGE_DB_FILE = 'images.sqlite'
 
 def create_publisher():
      p = Publisher(RootDirectory(), display_exceptions='plain')
@@ -14,37 +17,38 @@ def create_publisher():
  
 def setup():                            # stuff that should be run once.
     html.init_templates()
-    #add_default_image()
-    loadDb()
+
+    if not os.path.exists(IMAGE_DB_FILE):
+        create_database()
+
+    #retrieve_all_images()
 
 def teardown():                         # stuff that should be run once.
     pass
 
-# Add some default images
-def add_default_image():
-    some_data = open('imageapp/favicon.ico', 'rb').read()
-    img = image.create_image_dict(data = some_data, fileName = "fav.ico",\
-                                       description = "Favorite icon")
-    image.add_image(img)
-    commentForm = {'i': 0, 'user': 'Minh', 'comment': 'Small file for testing'}
-    image.add_comment(commentForm)
+def create_database():
+    print 'creating database'
+    db = sqlite3.connect('images.sqlite')
+    db.execute('CREATE TABLE image_store (i INTEGER PRIMARY KEY, filename VARCHAR(255), \
+        owner VARCHAR(30), score INTEGER, image BLOB, \
+        FOREIGN KEY (owner) REFERENCES user(username))');
+    db.execute('CREATE TABLE image_comments (i INTEGER PRIMARY KEY, imageId INTEGER, \
+     comment TEXT, FOREIGN KEY (imageId) REFERENCES image_store(i))');
+    db.execute('CREATE TABLE user (username VARCHAR(30) PRIMARY KEY, \
+        password VARCHAR(30))');
+    db.commit()
+    db.close()
+
+def retrieve_all_images():
+    # connect to database
+    db = sqlite3.connect('images.sqlite')
     
-    some_data = open('imageapp/dice.png', 'rb').read()
-    img = image.create_image_dict(data = some_data, fileName = "dice.png",\
-                                       description = "Four colorful dices")
-    image.add_image(img)
-    commentForm = {'i': 1, 'user': 'Minh', 'comment': 'First comment ever'}
-    image.add_comment(commentForm)
+    # configure to retrieve bytes, not text
+    db.text_factory = bytes
 
-    some_data = open('imageapp/tux.png', 'rb').read()
-    img = image.create_image_dict(data = some_data, fileName = "tux.png",\
-                                       description = "Tux the Linux penguin")
-    image.add_image(img)
-    commentForm = {'i': 2, 'user': 'Minh', 'comment': 'Have you play SuperTux?'}
-    image.add_comment(commentForm)
+    # get a query handle (or "cursor")
+    c = db.cursor()
 
-# Load data from database
-def loadDb():
-     imageDictList = query.loadAll()
-     for imgDict in imageDictList:
-          image.load_image_from_form(imgDict)
+    # select all of the images
+    for row in c.execute('SELECT * FROM image_store ORDER BY i DESC'):
+        open(row[1], 'w').write(row[2])

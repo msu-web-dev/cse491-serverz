@@ -1,5 +1,4 @@
-def setup():
-    pass
+from apps import ChatApp
 
-def teardown():
-    pass
+def create_chat_app(files_path):
+    return ChatApp(files_path)

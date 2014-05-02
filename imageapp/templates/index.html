@@ -1,9 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href='/upload_image'>Upload an image</a> |
-<a href='/image?i=latest'>Show most recent image</a> |
-<a href='/search'>Search an image</a> |
-<a href='/image_list'>List of images</a><br>
-<img width=40% src='image_raw?q=latest'/>
+
+<div class="contentText">
+    <div class="uploadLink">
+        <a href='upload'>Upload an image</a>
+        <p>
+        <h2>Version 2 - AJAX</h2>
+        <a href='upload2'>Upload an image</a>
+    </div>
+    <p>
+    <a href='image_list'>All images</a>
+    <hr>
+    Most Recent Image<p>
+    <img width=40% src='image_raw'/>
+</div>
+
+<script type="text/javascript">
+var username = $.trim($('#username').text())
+
+if (username == '')
+{
+    $(".uploadLink").hide()
+}
+</script>
 {% endblock %}

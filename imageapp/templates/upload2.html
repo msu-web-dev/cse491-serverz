@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="contentText">
+Upload an image (jpg, png, or tif) (other version):
+
+<form id='form' enctype='multipart/form-data' action='upload_receive' method='POST'>
+Filename: <input type='file' name='file'><p>
+<input type='submit'>
+</form>
+
+<div id='success', style="display:none">Image successfully uploaded. Nice.</div>
+<div id='failure', style="display:none">Image upload failed. Oh dear. Please try again!</div>
+<img id='image' src=''/>
+</div>
+
+<script type='text/javascript'>
+$(document).ready(function(e) {
+
+  var username = $.trim($('#username').text())
+
+  if (username == '')
+  {
+      window.location.href = "./"
+  }
+
+  $("#form").on('submit', (function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+
+    $.ajax({
+      type:'POST',
+      url:$(this).attr('action'),
+      data:formData,
+      cache:false,
+      contentType:false,
+      processData:false,
+      success:function(data) {
+        console.log('success!');
+        $('#success').fadeIn()
+        $('#image').attr('src', '/image_raw?special=latest')
+        $('#image').attr('style', 'max-height:400px')
+
+      },
+      error:function(data) {
+        console.log('error!');
+        $('#failure').fadeIn()
+      }
+    });
+  }));
+});
+</script>
+
+{% endblock %}
